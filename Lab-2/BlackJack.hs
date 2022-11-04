@@ -43,15 +43,15 @@ sizeSteps = [size hand2
 -- Pattern matching wether it's a numeric value or a ranked card 
 -- Since we don't want to print "Numeric 10" but "10"
 -- We display card without unicode
-displayCard :: Card -> String
-displayCard (Card (Numeric v) s)    = show v ++ " of " ++ show s ++ "\n"
-displayCard (Card r s)              = show r ++ " of " ++ show s ++ "\n"
+display :: Card -> String
+display (Card (Numeric v) s)    = show v ++ " of " ++ show s ++ "\n"
+display (Card r s)              = show r ++ " of " ++ show s ++ "\n"
 
 -- Using displayCard to add together the hand (clashed with displayHand
 -- in the other file so renaming it)
 displayHand :: Hand -> String
 displayHand Empty      = ""
-displayHand (Add c h)  = displayCard c ++ displayHand h
+displayHand (Add c h)  = display c ++ displayHand h
 
 -------------------------------------------------------------------------
 -- A2
