@@ -1,3 +1,9 @@
+{- Lab 2A
+   Date: 2022-11-07
+   Authors: Zozk Mohamed and Anton Sandberg
+   Lab group: -
+ -}
+
 module BlackJack where
 import Cards
     ( Hand(..),
@@ -8,20 +14,6 @@ import Cards
       size )
 import RunGame ( Player(..) )
 import Test.QuickCheck ()
-
-
--- Creating some example hands for checking
-hand2 :: Hand
-hand2 = Add (Card (Numeric 2) Hearts)
-                (Add (Card Jack Spades) Empty)
-hand3 :: Hand
-hand3 = Add (Card (Numeric 5) Hearts)
-                (Add (Card Jack Spades) Empty)
-card2 :: Card
-card2 = Card (Numeric 2) Hearts
-acesHand :: Hand
-acesHand = Add (Card Ace Hearts)
-                (Add (Card Ace Spades) Empty)
 
 -------------------------------------------------------------------------
 -- A0
@@ -36,22 +28,22 @@ sizeSteps = [size hand2
             , 1 + 1 + size Empty
             , 1 + 1 + 0
             , 2]
+
 -------------------------------------------------------------------------
 -- A1
 -------------------------------------------------------------------------
-
 -- Pattern matching wether it's a numeric value or a ranked card 
 -- Since we don't want to print "Numeric 10" but "10"
 -- We display card without unicode
-display :: Card -> String
-display (Card (Numeric v) s)    = show v ++ " of " ++ show s ++ "\n"
-display (Card r s)              = show r ++ " of " ++ show s ++ "\n"
+displayCard :: Card -> String
+displayCard (Card (Numeric v) s)    = show v ++ " of " ++ show s ++ "\n"
+displayCard (Card r s)              = show r ++ " of " ++ show s ++ "\n"
 
 -- Using displayCard to add together the hand (clashed with displayHand
 -- in the other file so renaming it)
 displayHand :: Hand -> String
 displayHand Empty      = ""
-displayHand (Add c h)  = display c ++ displayHand h
+displayHand (Add c h)  = displayCard c ++ displayHand h
 
 -------------------------------------------------------------------------
 -- A2
@@ -103,3 +95,16 @@ winner guest _     | gameOver guest = Bank
 winner guest bank  | not (gameOver guest) && gameOver bank = Guest              
                    | value guest > value bank = Guest
                    | otherwise = Bank
+
+-- We created some example hands for checking our functions
+hand2 :: Hand
+hand2 = Add (Card (Numeric 2) Hearts)
+                (Add (Card Jack Spades) Empty)
+hand3 :: Hand
+hand3 = Add (Card (Numeric 5) Hearts)
+                (Add (Card Jack Spades) Empty)
+card2 :: Card
+card2 = Card (Numeric 2) Hearts
+acesHand :: Hand
+acesHand = Add (Card Ace Hearts)
+                (Add (Card Ace Spades) Empty)
