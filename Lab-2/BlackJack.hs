@@ -42,19 +42,10 @@ sizeSteps = [size hand2
 
 -- Pattern matching wether it's a numeric value or a ranked card 
 -- Since we don't want to print "Numeric 10" but "10"
+-- We display card without unicode
 displayCard :: Card -> String
---displayCard (Card (Numeric v) s)    = show v ++ " of " ++ show s ++ "\n" -- <- Without unicode
---displayCard (Card r s)              = show r ++ " of " ++ show s ++ "\n"
-
-displayCard (Card (Numeric v) Hearts) = show v ++ " of " ++ "u\9829\n" -- <- With unicode
-displayCard (Card (Numeric v) Spades) = show v ++ " of " ++ "u\9824\n" -- <- Doesnt work on my computer though
-displayCard (Card (Numeric v) Diamonds) = show v ++ " of " ++ "u\9830\n"
-displayCard (Card (Numeric v) Clubs) = show v ++ " of " ++ "u\9827\n"
-
-displayCard (Card r Hearts) = show r ++ " of " ++ "u\9829\n"
-displayCard (Card r Spades) = show r ++ " of " ++ "u\9824\n"
-displayCard (Card r Diamonds) = show r ++ " of " ++ "u\9830\n"
-displayCard (Card r Clubs) = show r ++ " of " ++ "u\9827\n"
+displayCard (Card (Numeric v) s)    = show v ++ " of " ++ show s ++ "\n"
+displayCard (Card r s)              = show r ++ " of " ++ show s ++ "\n"
 
 -- Using displayCard to add together the hand (clashed with displayHand
 -- in the other file so renaming it)
@@ -86,7 +77,7 @@ numberOfAces (Add _ h)              = 0 + numberOfAces h
 -- Use our numberOfAces function to compute our correct value
 value :: Hand -> Integer
 value Empty = 0
-value h     | initialValue h > 20 = initialValue h - 10*numberOfAces h
+value h     | initialValue h > 21 = initialValue h - 10*numberOfAces h
             | otherwise = initialValue h
 
 -------------------------------------------------------------------------
@@ -94,8 +85,8 @@ value h     | initialValue h > 20 = initialValue h - 10*numberOfAces h
 -------------------------------------------------------------------------
 -- Check if a hand is bust
 gameOver :: Hand -> Bool
-gameOver h  | value h > 20  = False  
-            | otherwise     = True
+gameOver h  | value h > 21  = True  
+            | otherwise     = False
 
 -------------------------------------------------------------------------
 -- A4
