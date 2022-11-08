@@ -1,7 +1,7 @@
 {- Lab 2A
-   Date: 2022-11-07
+   Date: 2022-11-09
    Authors: Zozk Mohamed and Anton Sandberg
-   Lab group: -
+   Lab group: - 48
  -}
 
 module BlackJack where
@@ -39,8 +39,7 @@ displayCard :: Card -> String
 displayCard (Card (Numeric v) s)    = show v ++ " of " ++ show s ++ "\n"
 displayCard (Card r s)              = show r ++ " of " ++ show s ++ "\n"
 
--- Using displayCard to add together the hand (clashed with displayHand
--- in the other file so renaming it)
+-- Using displayCard to add together the hand 
 displayHand :: Hand -> String
 displayHand Empty      = ""
 displayHand (Add c h)  = displayCard c ++ displayHand h
@@ -75,7 +74,7 @@ value h     | initialValue h > 21 = initialValue h - 10*numberOfAces h
 -------------------------------------------------------------------------
 -- A3
 -------------------------------------------------------------------------
--- Check if a hand is bust
+-- Check if a hand is bust (hand value over 21)
 gameOver :: Hand -> Bool
 gameOver h  | value h > 21  = True  
             | otherwise     = False
