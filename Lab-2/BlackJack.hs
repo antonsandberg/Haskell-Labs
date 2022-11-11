@@ -95,6 +95,16 @@ winner guest bank  | not (gameOver guest) && gameOver bank = Guest
                    | value guest > value bank = Guest
                    | otherwise = Bank
 
+
+
+
+-------------------------------------------------------------------------
+-- B0
+-------------------------------------------------------------------------
+(<+) :: Hand -> Hand -> Hand
+(<+) Empty Empty = Empty
+(<+) hand Empty = hand
+
 -- We created some example hands for checking our functions
 hand2 :: Hand
 hand2 = Add (Card (Numeric 2) Hearts)
