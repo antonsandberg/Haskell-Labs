@@ -161,6 +161,9 @@ draw (Add c deck) p1 = (deck, Add c p1) -- Drawing the first card into the p1 ha
 second :: (a, b) -> b
 second (x,y) = y
 
+first :: (a, b) -> a
+first (x,y) = x
+
 playBank :: Hand -> Hand
 playBank deck = second $ playBankHelper deck Empty
 
@@ -176,17 +179,43 @@ playBankHelper deck hand | value hand < 16 = playBankHelper smallerDeck biggerHa
 -- and spits out a shuffled hand
 -- Use removeNthCard to grab a random card from current deck
 -- and adding it to new hand where it will shuffled
-shuffleDeck :: StdGen -> Hand -> Hand -> Hand
--- shuffleDeck g Empty sd = sd 
-shuffleDeck g h = undefined
 
+--getRandom :: Int -> Int -> IO Int
+--getRandom lo hi = getStdRandom (randomR (lo, hi))
+
+--mkStdGen :: Int -> StdGen
+--let gen = mkStdGen 2022
+
+-- deck first shuffled hand later returns shuffled hand
+shuffleDeck :: StdGen -> Hand -> Hand -> Hand
+--shuffleDeck g Empty fullHand = fullHand 
+--shuffleDeck g deck newDeck = Add looseCard newDeck
+ -- where (looseCard, deck) = removeNthCard n deck
+  --      (n, g1) = randomR (0, size deck - 1) g
+
+
+shuffleDeck g deck newDeck 
+            | size deck == 0 = newDeck
+            | otherwise = shuffleDeck g' deck' (Add looseCard newDeck)
+            where (looseCard, deck') = removeNthCard n deck'
+                  (n, g') = randomR(0, size deck -1) g
 
 -- Want to add cards into the new hand from the "deck"
 -- until we are at the right index, then remove that card
 -- from deck and add into tuple
 -- 
-removeNthCard :: Int -> Hand -> Hand -> (Card, Hand)
-removeNthCard index deck hand = undefined
+removeNthCard :: Int -> Hand -> (Card, Hand)
+removeNthCard n hand | n < 0 = error "n is too low!"
+removeNthCard n hand | n > size hand - 1 = error "n is too high!" 
+removeNthCard n hand = removeNthCardHelper 
+                        (hands !! n, take (n-1) hands ++ drop (n+1) hands)
+  where hands = buildListOfHands hand
+
+-- Removes a layering, gives us (Card, Hand)
+-- instead of (Hand, Hands)
+removeNthCardHelper :: (Hand, [Hand]) -> (Card, Hand)
+removeNthCardHelper (Add c1 Empty, hands) = (c1, largeHand) 
+  where largeHand = deckHelper hands Empty
 
 prop_shuffle_sameCards :: StdGen -> Card -> Hand -> Bool
 prop_shuffle_sameCards g h c = undefined
@@ -196,28 +225,14 @@ prop_size_shuffle :: StdGen -> Hand -> Bool
 prop_size_shuffle = undefined
 --prop_size_shuffle g h = size (shuffleDeck g h) == size h 
 
--- Build a list of hands
+-- Build a list of hands 
 buildListOfHands :: Hand -> [Hand]
 buildListOfHands Empty = []
 buildListOfHands (Add card hand) = Add card Empty:buildListOfHands hand
 
-removeNthHand :: Int -> [Hand] -> (Hand, [Hand])
-removeNthHand n hands | n < 0 = error "n is too low!"
-removeNthHand n hands | n > length hands - 1 = error "n is too high!" 
-removeNthHand n hands = (hands !! n, take (n-1) hands ++ drop (n+1) hands)
-
--- Removes a layering, gives us (Card, Hand)
--- instead of (Hand, Hands)
-helperFunc :: (Hand, [Hand]) -> (Card, Hand)
-helperFunc (Add c1 Empty, hands) = (c1, largeHand) 
-  where largeHand = deckHelper hands Empty
 
 
-shuffleDeck2 :: StdGen -> Hand -> Hand
-shuffleDeck2 = undefined
---shuffleDeck2 g hand = (n, g1) randomR (0,size hands) g
 
--- f (Add card1 (Add card2 hand))  = f hand
 
 
 ------------------------------------------------------------
