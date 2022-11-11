@@ -174,12 +174,19 @@ playBankHelper deck hand | value hand < 16 = playBankHelper smallerDeck biggerHa
 -----------------------------------------------
 -- Wants a g a deck and an empty hand
 -- and spits out a shuffled hand
+-- Use removeNthCard to grab a random card from current deck
+-- and adding it to new hand where it will shuffled
 shuffleDeck :: StdGen -> Hand -> Hand -> Hand
 -- shuffleDeck g Empty sd = sd 
 shuffleDeck g h = undefined
 
-removeNthCard :: StdGen -> Hand -> (Card, Hand)
-removeNthCard g deck = undefined
+
+-- Want to add cards into the new hand from the "deck"
+-- until we are at the right index, then remove that card
+-- from deck and add into tuple
+-- 
+removeNthCard :: Int -> Hand -> Hand -> (Card, Hand)
+removeNthCard index deck hand = undefined
 
 prop_shuffle_sameCards :: StdGen -> Card -> Hand -> Bool
 prop_shuffle_sameCards g h c = undefined
@@ -192,4 +199,42 @@ prop_size_shuffle = undefined
 -- Build a list of hands
 buildListOfHands :: Hand -> [Hand]
 buildListOfHands Empty = []
-buildListOfHands (Add card hand) = (Add card Empty):buildListOfHands hand
+buildListOfHands (Add card hand) = Add card Empty:buildListOfHands hand
+
+removeNthHand :: Int -> [Hand] -> (Hand, [Hand])
+removeNthHand n hands | n < 0 = error "n is too low!"
+removeNthHand n hands | n > length hands - 1 = error "n is too high!" 
+removeNthHand n hands = (hands !! n, take (n-1) hands ++ drop (n+1) hands)
+
+-- Removes a layering, gives us (Card, Hand)
+-- instead of (Hand, Hands)
+helperFunc :: (Hand, [Hand]) -> (Card, Hand)
+helperFunc (Add c1 Empty, hands) = (c1, largeHand) 
+  where largeHand = deckHelper hands Empty
+
+
+shuffleDeck2 :: StdGen -> Hand -> Hand
+shuffleDeck2 = undefined
+--shuffleDeck2 g hand = (n, g1) randomR (0,size hands) g
+
+-- f (Add card1 (Add card2 hand))  = f hand
+
+
+------------------------------------------------------------
+-- B6
+------------------------------------------------------------
+{-
+implementation = Interface
+  { iEmpty    = empty
+  , iFullDeck = fullDeck
+  , iValue    = value
+  , iGameOver = gameOver
+  , iWinner   = winner
+  , iDraw     = draw
+  , iPlayBank = playBank
+  , iShuffle  = shuffle
+  }
+
+main :: IO ()
+main = runGame implementation
+-}
