@@ -187,13 +187,16 @@ playBankHelper deck hand | value hand < 16 = playBankHelper smallerDeck biggerHa
 --let gen = mkStdGen 2022
 
 -- deck first shuffled hand later returns shuffled hand
-shuffleDeck :: StdGen -> Hand -> Hand -> Hand
+
 --shuffleDeck g Empty fullHand = fullHand 
 --shuffleDeck g deck newDeck = Add looseCard newDeck
  -- where (looseCard, deck) = removeNthCard n deck
   --      (n, g1) = randomR (0, size deck - 1) g
 
+shuffle :: StdGen -> Hand -> Hand
+shuffle g deck = shuffleDeck g deck Empty
 
+shuffleDeck :: StdGen -> Hand -> Hand -> Hand
 shuffleDeck g deck newDeck 
             | size deck == 0 = newDeck
             | otherwise = shuffleDeck g' deck' (Add looseCard newDeck)
@@ -203,7 +206,8 @@ shuffleDeck g deck newDeck
 -- Want to add cards into the new hand from the "deck"
 -- until we are at the right index, then remove that card
 -- from deck and add into tuple
--- 
+
+-- PROBLEM MED DENNA FUNKTION, RETUNERAR TOM HAND NÄR MAN TAR BORT SISTA ELEMENT I HAND1/HAND2/HAND3!
 removeNthCard :: Int -> Hand -> (Card, Hand)
 removeNthCard n hand | n < 0 = error "n is too low!"
 removeNthCard n hand | n > size hand - 1 = error "n is too high!" 
