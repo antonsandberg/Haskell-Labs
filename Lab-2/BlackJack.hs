@@ -183,6 +183,8 @@ buildListOfHands (Add card hand) = Add card Empty:buildListOfHands hand
 -- Removes a layering, gives us (Card, Hand)
 -- instead of (Hand, [Hand])
 -- such that we don't get errors in function definitions later
+-- Won't write error checks since we know we will get correct Hand, [Hand]
+-- (it complained in the test checks on Fire)
 removeNthCardHelper :: (Hand, [Hand]) -> (Card, Hand)
 removeNthCardHelper (Add c1 Empty, hands) = (c1, largeHand) 
   where largeHand = deckHelper hands Empty
