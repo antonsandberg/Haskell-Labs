@@ -1,5 +1,5 @@
-{- Lab 2A
-   Date: 2022-11-09
+{- Lab 2A + 2B
+   Date: 2022-11-16
    Authors: Zozk Mohamed and Anton Sandberg
    Lab group: - 48
  -}
@@ -12,9 +12,9 @@ import Cards
       Card(..),
       rank,
       size )
-import RunGame ( Player(..) )
+import RunGame
 import Test.QuickCheck ()
-import System.Random
+import System.Random ( StdGen, Random(randomR) )
 
 -------------------------------------------------------------------------
 -- A0
@@ -43,7 +43,7 @@ displayCard (Card r s)              = show r ++ " of " ++ show s ++ "\n"
 -- Using displayCard to add together the hand 
 displayHand :: Hand -> String
 displayHand Empty      = ""
-displayHand (Add c h)  = displayCard c ++ displayHand h
+displayHand (Add c h)  = displayCard c ++ BlackJack.displayHand h
 
 -------------------------------------------------------------------------
 -- A2
@@ -95,20 +95,6 @@ winner guest _     | gameOver guest = Bank
 winner guest bank  | not (gameOver guest) && gameOver bank = Guest              
                    | value guest > value bank = Guest
                    | otherwise = Bank
-
-
--- We created some example hands for checking our functions
-hand2 :: Hand
-hand2 = Add (Card (Numeric 2) Hearts)
-                (Add (Card Jack Spades) Empty)
-hand3 :: Hand
-hand3 = Add (Card (Numeric 5) Hearts)
-                (Add (Card Jack Spades) Empty)
-card2 :: Card
-card2 = Card (Numeric 2) Hearts
-acesHand :: Hand
-acesHand = Add (Card Ace Hearts)
-                (Add (Card Ace Spades) Empty)
 
 -------------------------------------------------------------------------
 -- B1
@@ -168,41 +154,20 @@ playBankHelper deck hand | value hand < 16 = playBankHelper smallerDeck biggerHa
 -----------------------------------------------
 -- B5
 -----------------------------------------------
--- Wants a g a deck and an empty hand
--- and spits out a shuffled hand
--- Use removeNthCard to grab a random card from current deck
--- and adding it to new hand where it will shuffled
+-- Here it gets a little messy, we use a helper function
+-- Which uses some other functions described below
+shuffleDeck :: StdGen -> Hand -> Hand
+shuffleDeck g deck = shuffleHelper g deck Empty
 
---getRandom :: Int -> Int -> IO Int
---getRandom lo hi = getStdRandom (randomR (lo, hi))
-
---mkStdGen :: Int -> StdGen
---let gen = mkStdGen 2022
-
--- deck first shuffled hand later returns shuffled hand
-
---shuffleDeck g Empty fullHand = fullHand 
---shuffleDeck g deck newDeck = Add looseCard newDeck
- -- where (looseCard, deck) = removeNthCard n deck
-  --      (n, g1) = randomR (0, size deck - 1) g
-
-shuffle :: StdGen -> Hand -> Hand
-shuffle g deck = shuffleDeck g deck Empty
-
-shuffleDeck :: StdGen -> Hand -> Hand -> Hand
-shuffleDeck g deck newDeck 
+shuffleHelper :: StdGen -> Hand -> Hand -> Hand
+shuffleHelper g deck newDeck 
             | size deck == 0 = newDeck
-            | otherwise = shuffleDeck g' deck' (Add looseCard newDeck)
+            | otherwise = shuffleHelper g' deck' (Add looseCard newDeck)
             where (looseCard, deck') = removeNthCard n deck
                   (n, g') = randomR (0, size deck-1) g
 
-                  --fst $ randomR (('a', 5.0), ('z', 10.0)) $ mkStdGen 2021
--- Want to add cards into the new hand from the "deck"
--- until we are at the right index, then remove that card
--- from deck and add into tuple
-
-
--- Not really the most clean solution, but this enables us to use !!, take and drop
+-- Uses the helper function which produces a list of hands
+-- to be able to use list operations
 removeNthCard :: Int -> Hand -> (Card, Hand)
 removeNthCard n hand | n < 0 = error "n is too low!"
 removeNthCard n hand | n > size hand - 1 = error "n is too high!" 
@@ -216,41 +181,52 @@ buildListOfHands Empty = []
 buildListOfHands (Add card hand) = Add card Empty:buildListOfHands hand
 
 -- Removes a layering, gives us (Card, Hand)
--- instead of (Hand, Hands)
+-- instead of (Hand, [Hand])
+-- such that we don't get errors in function definitions later
 removeNthCardHelper :: (Hand, [Hand]) -> (Card, Hand)
 removeNthCardHelper (Add c1 Empty, hands) = (c1, largeHand) 
   where largeHand = deckHelper hands Empty
 
+  -- Defining the needed helper functions
+belongsTo :: Card -> Hand -> Bool
+c `belongsTo` Empty = False
+c `belongsTo` (Add c' h) = c == c' || c `belongsTo` h
+
 prop_shuffle_sameCards :: StdGen -> Card -> Hand -> Bool
-prop_shuffle_sameCards g h c = undefined
-  --c `belongsTo` h == c `belongsTo` shuffleDeck g h
+prop_shuffle_sameCards g c h = c `belongsTo` h == c `belongsTo` shuffleDeck g h
 
 prop_size_shuffle :: StdGen -> Hand -> Bool
-prop_size_shuffle = undefined
---prop_size_shuffle g h = size (shuffleDeck g h) == size h 
-
-
-
-
-
-
-
+prop_size_shuffle g h = size (shuffleDeck g h) == size h 
 
 ------------------------------------------------------------
 -- B6
 ------------------------------------------------------------
-{-
+
+implementation :: Interface
 implementation = Interface
-  { iEmpty    = empty
-  , iFullDeck = fullDeck
+  { iFullDeck = fullDeck
   , iValue    = value
-  , iGameOver = gameOver
-  , iWinner   = winner
+  , iDisplay  = BlackJack.displayHand -- clashes with the other displayHand
+  , iGameOver = gameOver              -- otherwise
+  , iWinner   = winner 
   , iDraw     = draw
   , iPlayBank = playBank
-  , iShuffle  = shuffle
+  , iShuffle  = shuffleDeck
   }
 
 main :: IO ()
 main = runGame implementation
--}
+
+
+-- We created some example hands for checking our functions
+hand2 :: Hand
+hand2 = Add (Card (Numeric 2) Hearts)
+                (Add (Card Jack Spades) Empty)
+hand3 :: Hand
+hand3 = Add (Card (Numeric 5) Hearts)
+                (Add (Card Jack Spades) Empty)
+card2 :: Card
+card2 = Card (Numeric 2) Hearts
+acesHand :: Hand
+acesHand = Add (Card Ace Hearts)
+                (Add (Card Ace Spades) Empty)
