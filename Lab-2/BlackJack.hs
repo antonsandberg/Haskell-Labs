@@ -130,20 +130,19 @@ prop_size_onTopOf p1 p2 =
 -------------------------------------------------------------------------
 -- B2
 -------------------------------------------------------------------------
--- It's a mess, but its works!
+-- It's a mess, but it works!
 fullDeck :: Hand 
 fullDeck = startFullDeck Empty
 
 startFullDeck :: Hand -> Hand 
-startFullDeck hand = deckHelper listOfHands hand
+startFullDeck = deckHelper listOfHands
   where listOfHands = [Add c Empty | c <- 
                       [Card r s | r <- [Ace, King, Queen, Jack], s <- allSuits] ++ 
                       [Card r s | r <- [Numeric n | n <- [2..10]], s <- allSuits] ]
         allSuits = [Spades, Hearts, Diamonds, Clubs]
 
 deckHelper :: [Hand] ->  Hand -> Hand 
-deckHelper [] hand = hand
-deckHelper (x:xs) hand = x <+ (deckHelper xs hand)
+deckHelper xs hand = foldr (<+) hand xs
 
 
 -----------------------------------------------
@@ -158,14 +157,8 @@ draw (Add c deck) p1 = (deck, Add c p1) -- Drawing the first card into the p1 ha
 -----------------------------------------------
 -- B4 
 -----------------------------------------------
-second :: (a, b) -> b
-second (x,y) = y
-
-first :: (a, b) -> a
-first (x,y) = x
-
 playBank :: Hand -> Hand
-playBank deck = second $ playBankHelper deck Empty
+playBank deck = snd $ playBankHelper deck Empty
 
 playBankHelper :: Hand -> Hand -> (Hand, Hand) 
 playBankHelper deck hand | value hand < 16 = playBankHelper smallerDeck biggerHand
@@ -200,20 +193,27 @@ shuffleDeck :: StdGen -> Hand -> Hand -> Hand
 shuffleDeck g deck newDeck 
             | size deck == 0 = newDeck
             | otherwise = shuffleDeck g' deck' (Add looseCard newDeck)
-            where (looseCard, deck') = removeNthCard n deck'
-                  (n, g') = randomR(0, size deck -1) g
+            where (looseCard, deck') = removeNthCard n deck
+                  (n, g') = randomR (0, size deck-1) g
 
+                  --fst $ randomR (('a', 5.0), ('z', 10.0)) $ mkStdGen 2021
 -- Want to add cards into the new hand from the "deck"
 -- until we are at the right index, then remove that card
 -- from deck and add into tuple
 
--- PROBLEM MED DENNA FUNKTION, RETUNERAR TOM HAND NÄR MAN TAR BORT SISTA ELEMENT I HAND1/HAND2/HAND3!
+
+-- Not really the most clean solution, but this enables us to use !!, take and drop
 removeNthCard :: Int -> Hand -> (Card, Hand)
 removeNthCard n hand | n < 0 = error "n is too low!"
 removeNthCard n hand | n > size hand - 1 = error "n is too high!" 
 removeNthCard n hand = removeNthCardHelper 
-                        (hands !! n, take (n-1) hands ++ drop (n+1) hands)
-  where hands = buildListOfHands hand
+                        (hands !! n, take n hands ++ drop (n+1) hands)
+  where hands = buildListOfHands hand -- Need this to index the correct card to be "shuffled"
+
+-- Build a list of hands 
+buildListOfHands :: Hand -> [Hand]
+buildListOfHands Empty = []
+buildListOfHands (Add card hand) = Add card Empty:buildListOfHands hand
 
 -- Removes a layering, gives us (Card, Hand)
 -- instead of (Hand, Hands)
@@ -229,10 +229,7 @@ prop_size_shuffle :: StdGen -> Hand -> Bool
 prop_size_shuffle = undefined
 --prop_size_shuffle g h = size (shuffleDeck g h) == size h 
 
--- Build a list of hands 
-buildListOfHands :: Hand -> [Hand]
-buildListOfHands Empty = []
-buildListOfHands (Add card hand) = Add card Empty:buildListOfHands hand
+
 
 
 
