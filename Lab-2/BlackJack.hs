@@ -96,15 +96,30 @@ winner guest bank  | not (gameOver guest) && gameOver bank = Guest
                    | value guest > value bank = Guest
                    | otherwise = Bank
 
+-- We created some example hands for checking our functions
+hand2 :: Hand
+hand2 = Add (Card (Numeric 2) Hearts)
+                (Add (Card Jack Spades) Empty)
+hand3 :: Hand
+hand3 = Add (Card (Numeric 5) Hearts)
+                (Add (Card Jack Spades) Empty)
+card2 :: Card
+card2 = Card (Numeric 2) Hearts
+acesHand :: Hand
+acesHand = Add (Card Ace Hearts)
+                (Add (Card Ace Spades) Empty)
+
 -------------------------------------------------------------------------
 -- B1
 -------------------------------------------------------------------------
+-- Creating the function
 (<+) :: Hand -> Hand -> Hand
 (<+) Empty Empty = Empty
 (<+) hand Empty = hand
 (<+) Empty hand = hand
 (<+) (Add c1 h1) h2 = Add c1 (h1 <+ h2)
 
+-- Test functions
 prop_onTopOf_assoc :: Hand -> Hand -> Hand -> Bool
 prop_onTopOf_assoc p1 p2 p3 =
       p1<+(p2<+p3) == (p1<+p2)<+p3
@@ -113,13 +128,16 @@ prop_size_onTopOf :: Hand -> Hand -> Bool
 prop_size_onTopOf p1 p2 =
       size (p1<+p2) == size p1 + size p2
 
+
 -------------------------------------------------------------------------
 -- B2
 -------------------------------------------------------------------------
--- It's a mess, but it works!
+-- Builds a deck that have all cards
+
 fullDeck :: Hand 
 fullDeck = startFullDeck Empty
 
+-- Combining all the different suits and values together
 startFullDeck :: Hand -> Hand 
 startFullDeck = deckHelper listOfHands
   where listOfHands = [Add c Empty | c <- 
@@ -127,33 +145,35 @@ startFullDeck = deckHelper listOfHands
                       [Card r s | r <- [Numeric n | n <- [2..10]], s <- allSuits] ]
         allSuits = [Spades, Hearts, Diamonds, Clubs]
 
+-- Using a helper function to make the list of hands to one hand
 deckHelper :: [Hand] ->  Hand -> Hand 
 deckHelper xs hand = foldr (<+) hand xs
 
 
------------------------------------------------
+-------------------------------------------------------------------------
 -- B3 
------------------------------------------------
-
+-------------------------------------------------------------------------
 draw :: Hand -> Hand -> (Hand, Hand)
 draw Empty p1 = error  "The deck is empty."
 draw (Add c deck) p1 = (deck, Add c p1) -- Drawing the first card into the p1 hand
 
 
------------------------------------------------
+-------------------------------------------------------------------------
 -- B4 
------------------------------------------------
+-------------------------------------------------------------------------
+
 playBank :: Hand -> Hand
 playBank deck = snd $ playBankHelper deck Empty
 
+-- Check if the value of hand is over 16, if not, draws a new card
 playBankHelper :: Hand -> Hand -> (Hand, Hand) 
 playBankHelper deck hand | value hand < 16 = playBankHelper smallerDeck biggerHand
                          | otherwise = (deck, hand)
   where (smallerDeck, biggerHand) = draw deck hand
 
------------------------------------------------
+-------------------------------------------------------------------------
 -- B5
------------------------------------------------
+-------------------------------------------------------------------------
 -- Here it gets a little messy, we use a helper function
 -- Which uses some other functions described below
 shuffleDeck :: StdGen -> Hand -> Hand
@@ -189,21 +209,24 @@ removeNthCardHelper :: (Hand, [Hand]) -> (Card, Hand)
 removeNthCardHelper (Add c1 Empty, hands) = (c1, largeHand) 
   where largeHand = deckHelper hands Empty
 
-  -- Defining the needed helper functions
+
+-- Just checking if the cards are still in the deck
+prop_shuffle_sameCards :: StdGen -> Card -> Hand -> Bool
+prop_shuffle_sameCards g c h = c `belongsTo` h == c `belongsTo` shuffleDeck g h
+
+-- Needed helper functions
 belongsTo :: Card -> Hand -> Bool
 c `belongsTo` Empty = False
 c `belongsTo` (Add c' h) = c == c' || c `belongsTo` h
 
-prop_shuffle_sameCards :: StdGen -> Card -> Hand -> Bool
-prop_shuffle_sameCards g c h = c `belongsTo` h == c `belongsTo` shuffleDeck g h
-
+-- Checks if the sizes differ before shuffling and after
 prop_size_shuffle :: StdGen -> Hand -> Bool
 prop_size_shuffle g h = size (shuffleDeck g h) == size h 
 
-------------------------------------------------------------
+-------------------------------------------------------------------------
 -- B6
-------------------------------------------------------------
-
+-------------------------------------------------------------------------
+-- Doing as instructed in the assignment
 implementation :: Interface
 implementation = Interface
   { iFullDeck = fullDeck
@@ -218,17 +241,3 @@ implementation = Interface
 
 main :: IO ()
 main = runGame implementation
-
-
--- We created some example hands for checking our functions
-hand2 :: Hand
-hand2 = Add (Card (Numeric 2) Hearts)
-                (Add (Card Jack Spades) Empty)
-hand3 :: Hand
-hand3 = Add (Card (Numeric 5) Hearts)
-                (Add (Card Jack Spades) Empty)
-card2 :: Card
-card2 = Card (Numeric 2) Hearts
-acesHand :: Hand
-acesHand = Add (Card Ace Hearts)
-                (Add (Card Ace Spades) Empty)
