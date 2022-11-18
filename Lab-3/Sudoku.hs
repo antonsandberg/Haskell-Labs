@@ -67,7 +67,7 @@ isSudoku :: Sudoku -> Bool
 isSudoku s = isCorrectSize s && and (map isCorrectElem (concat $ rows s))
 
 isCorrectSize :: Sudoku -> Bool
-isCorrectSize s =  and (map isSizeNine (rows s)) && isSizeNine (rows s)
+isCorrectSize s =  all isSizeNine (rows s) && isSizeNine (rows s)
   where isSizeNine n = length n == 9
 
 isCorrectElem :: Maybe Int -> Bool
@@ -81,7 +81,7 @@ isCorrectElem  Nothing = True
 -- | isFilled sud checks if sud is completely filled in,
 -- i.e. there are no blanks
 isFilled :: Sudoku -> Bool
-isFilled s = and $ map isJust (concat $ rows s)
+isFilled s = all isJust (concat $ rows s)
 
 ------------------------------------------------------------------------------
 
@@ -93,7 +93,7 @@ printSudoku :: Sudoku -> IO ()
 printSudoku s = mapM_ putStrLn (parseSudoku s)
 
 parseSudoku :: Sudoku -> [String]
-parseSudoku s = [parseRow x | x  <- (rows s)]
+parseSudoku s = [parseRow x | x  <- rows s]
 
 parseRow :: [Cell] -> String
 parseRow ss = [parseElem s | s <- ss] 
@@ -106,9 +106,9 @@ parseElem Nothing = '.'
 
 -- | readSudoku file reads from the file, and either delivers it, or stops
 -- if the file did not contain a sudoku
-readSudoku :: FilePath -> IO Sudoku
-readSudoku  f = do x <- readFile f
-                   putStr x
+-- readSudoku :: FilePath -> IO Sudoku
+-- readSudoku  f = do x <- readFile f
+--                   putStr x
                     
 
 ------------------------------------------------------------------------------
@@ -131,7 +131,7 @@ instance Arbitrary Sudoku where
 -- * C3
 
 prop_Sudoku :: Sudoku -> Bool
-prop_Sudoku s = isSudoku s
+prop_Sudoku = isSudoku
   -- hint: this definition is simple!
   
 ------------------------------------------------------------------------------
@@ -142,14 +142,20 @@ type Block = [Cell] -- a Row is also a Cell
 -- * D1
 
 isOkayBlock :: Block -> Bool
-isOkayBlock b = length (nubBy (\x y -> x==y && isNothing(x)) b) == 9
+isOkayBlock b = length (nubBy (\e1 e2 -> e1==e2 && isNothing e2) b) == 9
   
 
 
 -- * D2
 
 blocks :: Sudoku -> [Block]
-blocks = undefined
+blocks s = map concat $ groupBy3 $ concat $ transpose $ map groupBy3 $ rows s
+
+-- Need to fix the definition of this
+groupBy3 :: [a] -> [[a]]
+groupBy3 (e1:e2:e3:rest) = [e1, e2, e3] : groupBy3 rest
+groupBy3 []         = []
+
 
 prop_blocks_lengths :: Sudoku -> Bool
 prop_blocks_lengths = undefined
