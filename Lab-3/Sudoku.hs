@@ -149,12 +149,12 @@ isOkayBlock b = length (nubBy (\e1 e2 -> e1==e2 && isNothing e2) b) == 9
 -- * D2
 
 blocks :: Sudoku -> [Block]
-blocks s = map concat $ groupBy3 $ concat $ transpose $ map groupBy3 $ rows s
+blocks s = map concat $ groupByThree $ concat $ transpose $ map groupByThree $ rows s
 
 -- Need to fix the definition of this
-groupBy3 :: [a] -> [[a]]
-groupBy3 (e1:e2:e3:rest) = [e1, e2, e3] : groupBy3 rest
-groupBy3 []         = []
+groupByThree :: [a] -> [[a]]
+groupByThree (e1:e2:e3:rest) = [e1, e2, e3] : groupByThree rest
+groupByThree []         = []
 
 
 prop_blocks_lengths :: Sudoku -> Bool
