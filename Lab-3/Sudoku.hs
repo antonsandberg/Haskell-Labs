@@ -4,6 +4,8 @@ import Test.QuickCheck
 import Data.Maybe
 import Data.Char
 import Data.List
+import Control.Monad
+
 
 
 ------------------------------------------------------------------------------
@@ -106,18 +108,32 @@ parseElem Nothing = '.'
 
 -- | readSudoku file reads from the file, and either delivers it, or stops
 -- if the file did not contain a sudoku
--- readSudoku :: FilePath -> IO Sudoku
--- readSudoku  f = do x <- readFile f
---                   putStr x
-                    
 
+readSudoku :: FilePath -> IO Sudoku
+readSudoku f = do x <- readfile f
+                  let sudokuList = lines x  
+                  let sudoku = Sudoku {rows = map rowsToList sudokuList}
+                  if (isSudoku sudoku) then return sudoku
+                  else return error "This is not a valid SUDOKU!"
+
+ rowsToList :: [Char] -> [Cell]
+ rowsToList s = map charToCell s
+
+ charToCell :: Char ->  Cell
+ charToCell '.'  = Nothing
+ charToCell  c   =  Just (digitToInt c)
+ 
+      
 ------------------------------------------------------------------------------
 
 -- * C1
 
 -- | cell generates an arbitrary cell in a Sudoku
+{-
 cell :: Gen (Cell)
-cell = undefined
+cell = frequency [(9, liftM Nothing), (1, liftM Just choose (1, 9) )]
+-}
+
 
 
 -- * C2
@@ -132,38 +148,42 @@ instance Arbitrary Sudoku where
 
 prop_Sudoku :: Sudoku -> Bool
 prop_Sudoku = isSudoku
-  -- hint: this definition is simple!
+  -- hint: this definition is simple! (prob not this simple though)
   
 ------------------------------------------------------------------------------
 
 type Block = [Cell] -- a Row is also a Cell
-
-
 -- * D1
 
 isOkayBlock :: Block -> Bool
 isOkayBlock b = length (nubBy (\e1 e2 -> e1==e2 && isNothing e2) b) == 9
   
 
-
+-- CHECK ON THIS DURING THE WEEKEND 
 -- * D2
-
-blocks :: Sudoku -> [Block]
-blocks s = map concat $ groupByThree $ concat $ transpose $ map groupByThree $ rows s
+-- blocks :: Sudoku -> [Block]
+-- blocks s = groupByThree $ concat $ transpose $ map groupByThree $ rows s
 
 -- Need to fix the definition of this
-groupByThree :: [a] -> [[a]]
+groupByThree :: [Row] -> [[Row]]
 groupByThree (e1:e2:e3:rest) = [e1, e2, e3] : groupByThree rest
 groupByThree []         = []
 
 
+-- Not sure if this is correct since this is an exact replica of 
+-- what we've done previously and we might be suppose to do something else
 prop_blocks_lengths :: Sudoku -> Bool
-prop_blocks_lengths = undefined
+prop_blocks_lengths s =  all isSizeNine (rows s) && isSizeNine (rows s)
+  where isSizeNine n = length n == 9
 
 -- * D3
-
+-- Check if the regular sudoku is a good board
+-- Check if a transposed board is a good board
+-- And check if a block made board is a good board <- STILL NEED TO DO THIS
 isOkay :: Sudoku -> Bool
-isOkay = undefined
+isOkay s = isSudoku s && isSudoku (Sudoku $ transpose $ rows s)
+
+
 
 
 ---- Part A ends here --------------------------------------------------------
