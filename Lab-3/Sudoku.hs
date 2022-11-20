@@ -70,10 +70,11 @@ allBlankSudoku = Sudoku $ replicate 9 $ replicate 9 Nothing
 isSudoku :: Sudoku -> Bool
 isSudoku s = isCorrectSize s && all isCorrectElem (concat $ rows s)
 
+-----------------------------------------------------------------------
 isCorrectSize :: Sudoku -> Bool
 isCorrectSize s =  all isSizeNine (rows s) && isSizeNine (rows s)
   where isSizeNine n = length n == 9
-
+-----------------------------------------------------------------------
 isCorrectElem :: Maybe Int -> Bool
 isCorrectElem (Just x) = x `elem` [1..9]
 isCorrectElem  Nothing = True
@@ -92,17 +93,16 @@ isFilled s = all isJust (concat $ rows s)
 -- | printSudoku sud prints a nice representation of the sudoku sud on
 -- the screen
 printSudoku :: Sudoku -> IO ()
-printSudoku s = mapM_ putStrLn (parseSudoku s)
-
-parseSudoku :: Sudoku -> [String]
-parseSudoku s = [parseRow x | x  <- rows s]
-
-parseRow :: [Cell] -> String
-parseRow ss = [parseElem s | s <- ss] 
-
-parseElem :: Maybe Int -> Char
-parseElem (Just x) = intToDigit x
-parseElem Nothing = '.'
+printSudoku s = mapM_ putStrLn (parseSudoku s) where
+  parseSudoku :: Sudoku -> [String]
+  parseSudoku s = [parseRow x | x  <- rows s]
+  -------------------------------------------
+  parseRow :: [Cell] -> String
+  parseRow ss = [parseElem s | s <- ss] 
+  -------------------------------------------
+  parseElem :: Maybe Int -> Char
+  parseElem (Just x) = intToDigit x
+  parseElem Nothing = '.'
 
 -- * B2
 
@@ -114,16 +114,20 @@ readSudoku f = do x <- readFile f
                   let sudokuList = lines x  
                   let sudoku = Sudoku (map rowsToList sudokuList)
                   if isSudoku sudoku then return sudoku -- <- Doing the mandatory check
-                  else error "Stop importing an invalid Sudoku!"
+                  else error "Stop importing an invalid Sudoku!" where
+                    --------------------------------------------------
+                    rowsToList :: [Char] -> [Cell]
+                    rowsToList = map charToCell 
+                    --------------------------------------------------
+                    charToCell :: Char ->  Cell
+                    charToCell '.'  = Nothing               -- if . return Nothing on it's place
+                    charToCell  c   =  Just (digitToInt c)  -- Else return J
+                                                            -- ust combined with a conversion of the cell
+                              --The two functions below are just reverse of what we've done previously
+                              --So for every Row in our s we map the charToCell function
 
---The two functions below are just reverse of what we've done previously
---So for every Row in our s we map the charToCell function
-rowsToList :: [Char] -> [Cell]
-rowsToList = map charToCell where
-  charToCell :: Char ->  Cell
-  charToCell '.'  = Nothing               -- if . return Nothing on it's place
-  charToCell  c   =  Just (digitToInt c)  -- Else return J
-                                          -- ust combined with a conversion of the cell
+
+
 
 ------------------------------------------------------------------------------
 
