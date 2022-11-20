@@ -1,5 +1,6 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use newtype instead of data" #-}
+{-# LANGUAGE BlockArguments #-}
 module Sudoku where
 
 import Test.QuickCheck
@@ -77,8 +78,6 @@ isCorrectElem :: Maybe Int -> Bool
 isCorrectElem (Just x) = x `elem` [1..9]
 isCorrectElem  Nothing = True
 
-
-
 -- * A3
 
 -- | isFilled sud checks if sud is completely filled in,
@@ -115,37 +114,41 @@ readSudoku f = do x <- readFile f
                   let sudokuList = lines x  
                   let sudoku = Sudoku (map rowsToList sudokuList)
                   if isSudoku sudoku then return sudoku -- <- Doing the mandatory check
-                  else error "This is not a valid SUDOKU!"
+                  else error "Stop importing an invalid Sudoku!"
 
-
+--The two functions below are just reverse of what we've done previously
+--So for every Row in our s we map the charToCell function
 rowsToList :: [Char] -> [Cell]
-rowsToList = map charToCell
+rowsToList = map charToCell where
+  charToCell :: Char ->  Cell
+  charToCell '.'  = Nothing               -- if . return Nothing on it's place
+  charToCell  c   =  Just (digitToInt c)  -- Else return J
+                                          -- ust combined with a conversion of the cell
 
--- if . return Nothing on it's place
--- Else return Just combined with a conversion of the cell
-charToCell :: Char ->  Cell
-charToCell '.'  = Nothing
-charToCell  c   =  Just (digitToInt c)
- 
-      
 ------------------------------------------------------------------------------
 
 -- * C1
 
 -- | cell generates an arbitrary cell in a Sudoku
 
+
+-- hlint recommmended fmap, and need to use return
+-- since we only have one value for the other
+-- Using choose from the lectures as well as
+-- providing the 90/10 prob for the two different
+-- "cell types"
 cell :: Gen Cell
 cell = frequency [(9, fmap Just (choose (1, 9))), (1, return Nothing)]
-
-
 
 
 -- * C2
 
 -- | an instance for generating Arbitrary Sudokus
-instance Arbitrary Sudoku where
-  --arbitrary :: Gen Sudoku
-  --arbitrary = Sudoku [[]]
+-- Double use of vectorOf to get our 9x9 board of cells
+instance Arbitrary Sudoku where  
+  arbitrary :: Gen Sudoku
+  arbitrary = do s <- vectorOf 9 (vectorOf 9 cell)
+                 return (Sudoku s)
 
  -- hint: get to know the QuickCheck function vectorOf
  
@@ -154,7 +157,6 @@ instance Arbitrary Sudoku where
 -- Guess this is it, seems redundant however
 prop_Sudoku :: Sudoku -> Bool
 prop_Sudoku = isSudoku
-  -- hint: this definition is simple! (prob not this simple though)
   
 ------------------------------------------------------------------------------
 
@@ -175,6 +177,7 @@ blocks :: Sudoku -> [Block]
 blocks s = map concat $ chunksOf 3 $ concat $ transpose $ map (chunksOf 3) $ rows s
 
 
+-- Prob want to remove this since I got Data.List.Split to work
 {- 
 chunksOf' :: Int -> [a] -> [[a]] 
 chunksOf' _ [] = []
@@ -192,14 +195,9 @@ chunksOf'' i ls = map (take i) (build (splitter ls)) where
                 splitter l c n = l `c` splitter (drop i l) c n
 -}
 
-
-
--- Not sure if this is correct since this is an exact replica of 
--- what we've done previously and we might be suppose to do something else
--- Maybe we can just re use the other function and not do this all over again
+-- Just using the iscorrectSize function since I think that's what we want
 prop_blocks_lengths :: Sudoku -> Bool
-prop_blocks_lengths s =  all isSizeNine (rows s) && isSizeNine (rows s)
-  where isSizeNine n = length n == 9
+prop_blocks_lengths =  isCorrectSize
 
 -- * D3
 -- Check if the regular sudoku is a good board
@@ -207,9 +205,9 @@ prop_blocks_lengths s =  all isSizeNine (rows s) && isSizeNine (rows s)
 -- Check if a blocked board is a good board
 -- This gets quite ugly since we need to row the s and then re Sudoku it
 isOkay :: Sudoku -> Bool
-isOkay s = isSudoku s && isSudoku (Sudoku (transpose (rows s))) && isSudoku (Sudoku (blocks s)) 
-
-
+isOkay s = isSudoku s && cols' s && blocks' s where 
+  cols'   s = isSudoku $ Sudoku $ transpose $ rows s
+  blocks' s = isSudoku $ Sudoku $ blocks s 
 
 
 ---- Part A ends here --------------------------------------------------------
