@@ -210,12 +210,12 @@ threeXthree s = map concat $ chunksOf 3 $ concat $ transpose $ map (chunksOf 3) 
 
 -- If we transpose the row of rows we get the columns as rows
 -- Which means we don¨t have to create other new functions
-transposed :: Sudoku -> [Row]
-transposed s = transpose $ rows s
+columns :: Sudoku -> [Row]
+columns s = transpose $ rows s
 
 -- Adding all three versions together to get the 27 block "mega Sudoku"
 blocks :: Sudoku -> [Block]
-blocks s = rows s ++ transposed s ++ threeXthree s
+blocks s = rows s ++ columns s ++ threeXthree s
 
 -- Just using the iscorrectSize together with some transposing and blocking
 prop_blocks_lengths :: Sudoku -> Bool
