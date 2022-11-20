@@ -63,6 +63,17 @@ example2 =
     n = Nothing
     j = Just
 
+
+goodBlock :: Row
+goodBlock =  [j 3,j 6,n  ,n  ,j 7,j 1,j 5,n, n, n]
+  where
+    n = Nothing
+    j = Just
+badBlock :: Row
+badBlock =  [j 3,j 3,n  ,n  ,j 7,j 1,j 5,n, n   ]
+  where
+    n = Nothing
+    j = Just
 -- * A1
 
 -- | allBlankSudoku is a sudoku with just blanks
@@ -173,11 +184,20 @@ type Block = [Cell] -- a Row is also a Cell
 
 -- * D1
 -- nubBy function to be able to remove duplicates but only
--- If none of them are empty (check)
+-- If none of them are empty
 -- Redundant double isJust check but can be nice just for clarity
 isOkayBlock :: Block -> Bool
 isOkayBlock b = length (nubBy (\a b -> a==b && isJust a && isJust b) b) == 9
   
+isOkayBlock' :: Block -> Bool
+isOkayBlock' b = not (or (anyJustDups (sort b)))
+
+anyJustDups :: Block -> [Bool]
+anyJustDups (Nothing:Nothing:rest) = False : anyJustDups (Nothing:rest)  
+anyJustDups (e1:e2:rest) = (e1 == e2) : anyJustDups (e2:rest)
+anyJustDups lastItem = [False] -- Will only get here if there is only one item left
+
+
 -- * D2
 -- had to import chunksOf from Data.List.Split (which I installed manually)
 -- Just a mixture of the chunksOf function, concat and transpose
