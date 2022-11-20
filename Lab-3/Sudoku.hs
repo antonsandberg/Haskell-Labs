@@ -3,7 +3,7 @@ module Sudoku where
 import Test.QuickCheck
 import Data.Maybe
 import Data.Char
-import Data.List
+import Data.List.Split
 import Control.Monad
 import Data.List
 
@@ -169,16 +169,22 @@ blocks :: Sudoku -> [Block]
 blocks s = map concat $ chunksOf 3 $ concat $ transpose $ map (chunksOf 3) $ rows s
 
 
+{- 
+chunksOf' :: Int -> [a] -> [[a]] 
+chunksOf' _ [] = []
+chunksOf' i l | i > 0 = take i l : chunksOf' i (drop i l)
+              | otherwise = error "chunk size is less than 0"
+
 -- Wanted to use Split.chunkOf for this but couldnt import it
 -- So just defining it on my own (this is messy as we sont really understand it)
 build :: ((a1 -> [a1] -> [a1]) -> [a2] -> t) -> t
 build g = g (:) []
 
-chunksOf :: Int -> [a] -> [[a]]
-chunksOf i ls = map (take i) (build (splitter ls)) where
+chunksOf'' :: Int -> [a] -> [[a]]
+chunksOf'' i ls = map (take i) (build (splitter ls)) where
                 splitter [] _ n = n
                 splitter l c n = l `c` splitter (drop i l) c n
-
+-}
 
 
 
@@ -192,9 +198,10 @@ prop_blocks_lengths s =  all isSizeNine (rows s) && isSizeNine (rows s)
 -- * D3
 -- Check if the regular sudoku is a good board
 -- Check if a transposed board is a good board
--- And check if a block made board is a good board <- STILL NEED TO DO THIS
+-- Check if a blocked board is a good board
+-- This gets quite ugly since we need to row the s and then re Sudoku it
 isOkay :: Sudoku -> Bool
-isOkay s = isSudoku s && isSudoku (Sudoku $ transpose $ rows s)
+isOkay s = isSudoku s && isSudoku (Sudoku (transpose (rows s))) && isSudoku (Sudoku (blocks s)) 
 
 
 
