@@ -5,6 +5,9 @@ import Data.Maybe
 import Data.Char
 import Data.List
 import Control.Monad
+import Data.List
+
+
 
 
 
@@ -108,7 +111,7 @@ parseElem Nothing = '.'
 
 -- | readSudoku file reads from the file, and either delivers it, or stops
 -- if the file did not contain a sudoku
-
+{-
 readSudoku :: FilePath -> IO Sudoku
 readSudoku f = do x <- readfile f
                   let sudokuList = lines x  
@@ -122,7 +125,7 @@ readSudoku f = do x <- readfile f
  charToCell :: Char ->  Cell
  charToCell '.'  = Nothing
  charToCell  c   =  Just (digitToInt c)
- 
+ -}
       
 ------------------------------------------------------------------------------
 
@@ -161,17 +164,27 @@ isOkayBlock b = length (nubBy (\e1 e2 -> e1==e2 && isNothing e2) b) == 9
 
 -- CHECK ON THIS DURING THE WEEKEND 
 -- * D2
--- blocks :: Sudoku -> [Block]
--- blocks s = groupByThree $ concat $ transpose $ map groupByThree $ rows s
+blocks :: Sudoku -> [Block]
+-- blocks s = (splitAt . concat) $ map concat $ groupByThree $ concat $ transpose $ groupByThree $ rows s
+blocks s = map concat $ chunksOf 3 $ concat $ transpose $ map (chunksOf 3) $ rows s
 
--- Need to fix the definition of this
-groupByThree :: [Row] -> [[Row]]
-groupByThree (e1:e2:e3:rest) = [e1, e2, e3] : groupByThree rest
-groupByThree []         = []
+
+-- Wanted to use Split.chunkOf for this but couldnt import it
+-- So just defining it on my own (this is messy as we sont really understand it)
+build :: ((a1 -> [a1] -> [a1]) -> [a2] -> t) -> t
+build g = g (:) []
+
+chunksOf :: Int -> [a] -> [[a]]
+chunksOf i ls = map (take i) (build (splitter ls)) where
+                splitter [] _ n = n
+                splitter l c n = l `c` splitter (drop i l) c n
+
+
 
 
 -- Not sure if this is correct since this is an exact replica of 
 -- what we've done previously and we might be suppose to do something else
+-- Maybe we can just re use the other function and not do this all over again
 prop_blocks_lengths :: Sudoku -> Bool
 prop_blocks_lengths s =  all isSizeNine (rows s) && isSizeNine (rows s)
   where isSizeNine n = length n == 9
