@@ -79,7 +79,9 @@ isSudoku s = isCorrectSize s && all isCorrectElem (concat $ rows s)
 -----------------------------------------------------------------------
 isCorrectSize :: Sudoku -> Bool
 isCorrectSize s =  all isSizeNine (rows s) && isSizeNine (rows s)
-  where isSizeNine n = length n == 9
+
+isSizeNine :: [a] -> Bool
+isSizeNine l = length l == 9
 -----------------------------------------------------------------------
 isCorrectElem :: Maybe Int -> Bool
 isCorrectElem (Just x) = x `elem` [1..9]
@@ -152,7 +154,6 @@ cell = frequency [(9, fmap Just (choose (1, 9))), (1, return Nothing)]
 
 
 -- * C2
-
 -- | an instance for generating Arbitrary Sudokus
 -- Double use of vectorOf to get our 9x9 board of cells
 instance Arbitrary Sudoku where  
@@ -160,10 +161,8 @@ instance Arbitrary Sudoku where
   arbitrary = do s <- vectorOf 9 (vectorOf 9 cell)
                  return (Sudoku s)
 
- -- hint: get to know the QuickCheck function vectorOf
  
 -- * C3
-
 -- Guess this is it, seems redundant however
 prop_Sudoku :: Sudoku -> Bool
 prop_Sudoku = isSudoku
@@ -171,34 +170,41 @@ prop_Sudoku = isSudoku
 ------------------------------------------------------------------------------
 
 type Block = [Cell] -- a Row is also a Cell
--- * D1
 
+-- * D1
 -- nubBy function to be able to remove duplicates but only
 -- If none of them are empty (check)
+-- Redundant double isJust check but can be nice just for clarity
 isOkayBlock :: Block -> Bool
-isOkayBlock b = length (nubBy (\e1 e2 -> e1==e2 && (isNothing e2 && isNothing e2)) b) == 9
+isOkayBlock b = length (nubBy (\a b -> a==b && isJust a && isJust b) b) == 9
   
-
+-- * D2
 -- had to import chunksOf from Data.List.Split (which I installed manually)
 -- Just a mixture of the chunksOf function, concat and transpose
 -- To get the elements in their desired spots
--- * D2
-blocks :: Sudoku -> [Block]
-blocks s = map concat $ chunksOf 3 $ concat $ transpose $ map (chunksOf 3) $ rows s
+threeXthree :: Sudoku -> [Row]
+threeXthree s = map concat $ chunksOf 3 $ concat $ transpose $ map (chunksOf 3) $ rows s
 
--- Just using the iscorrectSize function since I think that's what we want
+-- If we transpose the row of rows we get the columns as rows
+-- Which means we don¨t have to create other new functions
+transposed :: Sudoku -> [Row]
+transposed s = transpose $ rows s
+
+-- Adding all three versions together to get the 27 block "mega Sudoku"
+blocks :: Sudoku -> [Block]
+blocks s = rows s ++ transposed s ++ threeXthree s
+
+-- Just using the iscorrectSize together with some transposing and blocking
 prop_blocks_lengths :: Sudoku -> Bool
-prop_blocks_lengths =  isCorrectSize
+prop_blocks_lengths s =  isCorrectSize s && colsSize s && blocksSize s where
+  colsSize    s = isCorrectSize $ Sudoku $ transpose $ rows s
+  blocksSize  s = isCorrectSize $ Sudoku $ threeXthree s
 
 -- * D3
--- Check if the regular sudoku is a good board
--- Check if a transposed board is a good board
--- Check if a blocked board is a good board
--- This gets quite ugly since we need to row the s and then re Sudoku it
+-- Just making use of our blocks function to create the 3*9 blocks and then checking
+-- with help of our 9 length check function
 isOkay :: Sudoku -> Bool
-isOkay s = isSudoku s && cols' s && blocks' s where 
-  cols'   s = isSudoku $ Sudoku $ transpose $ rows s
-  blocks' s = isSudoku $ Sudoku $ blocks s 
+isOkay s = all isSizeNine $ blocks s
 
 
 ---- Part A ends here --------------------------------------------------------
