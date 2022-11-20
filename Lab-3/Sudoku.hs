@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use newtype instead of data" #-}
 module Sudoku where
 
 import Test.QuickCheck
@@ -7,17 +9,13 @@ import Data.List.Split
 import Control.Monad
 import Data.List
 
-
-
-
-
 ------------------------------------------------------------------------------
 
 -- | Representation of sudoku puzzles (allows some junk)
 type Cell = Maybe Int -- a single cell
 type Row  = [Cell]    -- a row is a list of cells
 
-data Sudoku = Sudoku [Row] 
+data Sudoku = Sudoku [Row]
  deriving ( Show, Eq )
 
 rows :: Sudoku -> [Row]
@@ -62,14 +60,14 @@ example2 =
 
 -- | allBlankSudoku is a sudoku with just blanks
 allBlankSudoku :: Sudoku
-allBlankSudoku = Sudoku $ replicate 9 $ take 9 $ repeat Nothing
+allBlankSudoku = Sudoku $ replicate 9 $ replicate 9 Nothing
 
 -- * A2
 
 -- | isSudoku sud checks if sud is really a valid representation of a sudoku
 -- puzzle
 isSudoku :: Sudoku -> Bool
-isSudoku s = isCorrectSize s && and (map isCorrectElem (concat $ rows s))
+isSudoku s = isCorrectSize s && all isCorrectElem (concat $ rows s)
 
 isCorrectSize :: Sudoku -> Bool
 isCorrectSize s =  all isSizeNine (rows s) && isSizeNine (rows s)
@@ -111,31 +109,34 @@ parseElem Nothing = '.'
 
 -- | readSudoku file reads from the file, and either delivers it, or stops
 -- if the file did not contain a sudoku
-{-
+
 readSudoku :: FilePath -> IO Sudoku
-readSudoku f = do x <- readfile f
+readSudoku f = do x <- readFile f
                   let sudokuList = lines x  
-                  let sudoku = Sudoku {rows = map rowsToList sudokuList}
-                  if (isSudoku sudoku) then return sudoku
-                  else return error "This is not a valid SUDOKU!"
+                  let sudoku = Sudoku (map rowsToList sudokuList)
+                  if isSudoku sudoku then return sudoku -- <- Doing the mandatory check
+                  else error "This is not a valid SUDOKU!"
 
- rowsToList :: [Char] -> [Cell]
- rowsToList s = map charToCell s
 
- charToCell :: Char ->  Cell
- charToCell '.'  = Nothing
- charToCell  c   =  Just (digitToInt c)
- -}
+rowsToList :: [Char] -> [Cell]
+rowsToList = map charToCell
+
+-- if . return Nothing on it's place
+-- Else return Just combined with a conversion of the cell
+charToCell :: Char ->  Cell
+charToCell '.'  = Nothing
+charToCell  c   =  Just (digitToInt c)
+ 
       
 ------------------------------------------------------------------------------
 
 -- * C1
 
 -- | cell generates an arbitrary cell in a Sudoku
-{-
-cell :: Gen (Cell)
-cell = frequency [(9, liftM Nothing), (1, liftM Just choose (1, 9) )]
--}
+
+cell :: Gen Cell
+cell = frequency [(9, fmap Just (choose (1, 9))), (1, return Nothing)]
+
 
 
 
@@ -143,12 +144,14 @@ cell = frequency [(9, liftM Nothing), (1, liftM Just choose (1, 9) )]
 
 -- | an instance for generating Arbitrary Sudokus
 instance Arbitrary Sudoku where
-  arbitrary = undefined
+  --arbitrary :: Gen Sudoku
+  --arbitrary = Sudoku [[]]
 
  -- hint: get to know the QuickCheck function vectorOf
  
 -- * C3
 
+-- Guess this is it, seems redundant however
 prop_Sudoku :: Sudoku -> Bool
 prop_Sudoku = isSudoku
   -- hint: this definition is simple! (prob not this simple though)
@@ -158,14 +161,17 @@ prop_Sudoku = isSudoku
 type Block = [Cell] -- a Row is also a Cell
 -- * D1
 
+-- nubBy function to be able to remove duplicates but only
+-- If none of them are empty
 isOkayBlock :: Block -> Bool
 isOkayBlock b = length (nubBy (\e1 e2 -> e1==e2 && isNothing e2) b) == 9
   
 
--- CHECK ON THIS DURING THE WEEKEND 
+-- had to import chunksOf from Data.List.Split (which I installed manually)
+-- Just a mixture of the chunksOf function, concat and transpose
+-- To get the elements in their desired spots
 -- * D2
 blocks :: Sudoku -> [Block]
--- blocks s = (splitAt . concat) $ map concat $ groupByThree $ concat $ transpose $ groupByThree $ rows s
 blocks s = map concat $ chunksOf 3 $ concat $ transpose $ map (chunksOf 3) $ rows s
 
 
