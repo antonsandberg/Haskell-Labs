@@ -196,15 +196,13 @@ blocks s = rows s ++ transposed s ++ threeXthree s
 
 -- Just using the iscorrectSize together with some transposing and blocking
 prop_blocks_lengths :: Sudoku -> Bool
-prop_blocks_lengths s =  isCorrectSize s && colsSize s && blocksSize s where
-  colsSize    s = isCorrectSize $ Sudoku $ transpose $ rows s
-  blocksSize  s = isCorrectSize $ Sudoku $ threeXthree s
+prop_blocks_lengths s = all isSizeNine $ blocks s
 
 -- * D3
 -- Just making use of our blocks function to create the 3*9 blocks and then checking
 -- with help of our 9 length check function
 isOkay :: Sudoku -> Bool
-isOkay s = all isSizeNine $ blocks s
+isOkay s = all isOkayBlock $ blocks s
 
 
 ---- Part A ends here --------------------------------------------------------
