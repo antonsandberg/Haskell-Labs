@@ -189,13 +189,16 @@ type Block = [Cell] -- a Row is also a Cell
 isOkayBlock :: Block -> Bool
 isOkayBlock b = length (nubBy (\a b -> a==b && isJust a && isJust b) b) == 9
   
+-- If we have no dups the whole anyJustDups will be false which we will get to true
+-- If there is at least one dup we will get at least one true which we want to be false
+-- Sort to be able to compare them next to each other
 isOkayBlock' :: Block -> Bool
-isOkayBlock' b = not (or (anyJustDups (sort b)))
-
-anyJustDups :: Block -> [Bool]
-anyJustDups (Nothing:Nothing:rest) = False : anyJustDups (Nothing:rest)  
-anyJustDups (e1:e2:rest) = (e1 == e2) : anyJustDups (e2:rest)
-anyJustDups lastItem = [False] -- Will only get here if there is only one item left
+isOkayBlock' b = not (or (anyJustDups (sort b))) where
+  ----------------------------------------------------------------------
+  anyJustDups :: Block -> [Bool]
+  anyJustDups (Nothing:Nothing:rest) = False : anyJustDups (Nothing:rest)  
+  anyJustDups (e1:e2:rest) = (e1 == e2) : anyJustDups (e2:rest)
+  anyJustDups lastItem = [False] -- Will only get here if there is only one item left
 
 
 -- * D2
