@@ -1,3 +1,9 @@
+{- Lab 3A 
+   Date: 2022-11-21
+   Authors: Zozk Mohamed and Anton Sandberg
+   Lab group: - 48
+ -}
+
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use newtype instead of data" #-}
 {-# LANGUAGE BlockArguments #-}
@@ -136,7 +142,7 @@ readSudoku f = do x <- readFile f
 -- | cell generates an arbitrary cell in a Sudoku
 
 
--- hlint recommmended fmap, and need to use return
+-- hlint recommended fmap, and need to use return
 -- since we only have one value for the other
 -- Using choose from the lectures as well as
 -- providing the 90/10 prob for the two different
@@ -179,25 +185,6 @@ isOkayBlock b = length (nubBy (\e1 e2 -> e1==e2 && isNothing e2) b) == 9
 -- * D2
 blocks :: Sudoku -> [Block]
 blocks s = map concat $ chunksOf 3 $ concat $ transpose $ map (chunksOf 3) $ rows s
-
-
--- Prob want to remove this since I got Data.List.Split to work
-{- 
-chunksOf' :: Int -> [a] -> [[a]] 
-chunksOf' _ [] = []
-chunksOf' i l | i > 0 = take i l : chunksOf' i (drop i l)
-              | otherwise = error "chunk size is less than 0"
-
--- Wanted to use Split.chunkOf for this but couldnt import it
--- So just defining it on my own (this is messy as we sont really understand it)
-build :: ((a1 -> [a1] -> [a1]) -> [a2] -> t) -> t
-build g = g (:) []
-
-chunksOf'' :: Int -> [a] -> [[a]]
-chunksOf'' i ls = map (take i) (build (splitter ls)) where
-                splitter [] _ n = n
-                splitter l c n = l `c` splitter (drop i l) c n
--}
 
 -- Just using the iscorrectSize function since I think that's what we want
 prop_blocks_lengths :: Sudoku -> Bool
