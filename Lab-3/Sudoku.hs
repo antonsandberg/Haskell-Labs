@@ -174,9 +174,9 @@ type Block = [Cell] -- a Row is also a Cell
 -- * D1
 
 -- nubBy function to be able to remove duplicates but only
--- If none of them are empty
+-- If none of them are empty (check)
 isOkayBlock :: Block -> Bool
-isOkayBlock b = length (nubBy (\e1 e2 -> e1==e2 && isNothing e2) b) == 9
+isOkayBlock b = length (nubBy (\e1 e2 -> e1==e2 && (isNothing e2 && isNothing e2)) b) == 9
   
 
 -- had to import chunksOf from Data.List.Split (which I installed manually)
