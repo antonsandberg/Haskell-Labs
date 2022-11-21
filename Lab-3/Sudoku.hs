@@ -163,7 +163,6 @@ readSudoku f = do x <- readFile f
 cell :: Gen Cell
 cell = frequency [(9, fmap Just (choose (1, 9))), (1, return Nothing)]
 
-
 -- * C2
 -- | an instance for generating Arbitrary Sudokus
 -- Double use of vectorOf to get our 9x9 board of cells
