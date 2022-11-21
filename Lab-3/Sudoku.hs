@@ -158,7 +158,7 @@ readSudoku f = do x <- readFile f
 -- hlint recommended fmap, and need to use return
 -- since we only have one value for the other
 -- Using choose from the lectures as well as
--- providing the 90/10 prob for the two different
+-- providing the 80/20 prob for the two different
 -- "cell types"
 cell :: Gen Cell
 cell = frequency [(2, fmap Just (choose (1, 9))), (8, return Nothing)]
@@ -167,8 +167,9 @@ cell = frequency [(2, fmap Just (choose (1, 9))), (8, return Nothing)]
 -- * C2
 -- | an instance for generating Arbitrary Sudokus
 -- Double use of vectorOf to get our 9x9 board of cells
+
 instance Arbitrary Sudoku where  
-  -- arbitrary :: Gen Sudoku
+  arbitrary :: Gen Sudoku
   arbitrary = do s <- vectorOf 9 (vectorOf 9 cell)
                  return (Sudoku s)
 
@@ -183,12 +184,6 @@ prop_Sudoku = isSudoku
 type Block = [Cell] -- a Row is also a Cell
 
 -- * D1
--- nubBy function to be able to remove duplicates but only
--- If none of them are empty
--- Redundant double isJust check but can be nice just for clarity
-isOkayBlock :: Block -> Bool
-isOkayBlock b = length (nubBy (\a b -> a==b && isJust a && isJust b) b) == 9
-  
 -- If we have no dups the whole anyJustDups will be false which we will get to true
 -- If there is at least one dup we will get at least one true which we want to be false
 -- Sort to be able to compare them next to each other
