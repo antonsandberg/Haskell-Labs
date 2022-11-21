@@ -161,14 +161,14 @@ readSudoku f = do x <- readFile f
 -- providing the 90/10 prob for the two different
 -- "cell types"
 cell :: Gen Cell
-cell = frequency [(9, fmap Just (choose (1, 9))), (1, return Nothing)]
+cell = frequency [(2, fmap Just (choose (1, 9))), (8, return Nothing)]
 
 
 -- * C2
 -- | an instance for generating Arbitrary Sudokus
 -- Double use of vectorOf to get our 9x9 board of cells
 instance Arbitrary Sudoku where  
-  arbitrary :: Gen Sudoku
+  -- arbitrary :: Gen Sudoku
   arbitrary = do s <- vectorOf 9 (vectorOf 9 cell)
                  return (Sudoku s)
 
