@@ -161,7 +161,7 @@ readSudoku f = do x <- readFile f
 -- providing the 80/20 prob for the two different
 -- "cell types"
 cell :: Gen Cell
-cell = frequency [(2, fmap Just (choose (1, 9))), (8, return Nothing)]
+cell = frequency [(1, fmap Just (choose (1, 9))), (9, return Nothing)]
 
 
 -- * C2
