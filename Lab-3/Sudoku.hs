@@ -161,7 +161,7 @@ readSudoku f = do x <- readFile f
 -- providing the 80/20 prob for the two different
 -- "cell types"
 cell :: Gen Cell
-cell = frequency [(1, fmap Just (choose (1, 9))), (9, return Nothing)]
+cell = frequency [(2, fmap Just (choose (1, 9))), (8, return Nothing)]
 
 
 -- * C2
@@ -187,8 +187,8 @@ type Block = [Cell] -- a Row is also a Cell
 -- If we have no dups the whole anyJustDups will be false which we will get to true
 -- If there is at least one dup we will get at least one true which we want to be false
 -- Sort to be able to compare them next to each other
-isOkayBlock' :: Block -> Bool
-isOkayBlock' b = not (or (anyJustDups (sort b))) where
+isOkayBlock :: Block -> Bool
+isOkayBlock b = not (or (anyJustDups (sort b))) where
   ----------------------------------------------------------------------
   anyJustDups :: Block -> [Bool]
   anyJustDups (Nothing:Nothing:rest) = False : anyJustDups (Nothing:rest)  
