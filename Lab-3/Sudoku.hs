@@ -4,7 +4,6 @@
    Lab group: - 48
  -}
 {-# LANGUAGE InstanceSigs #-}
-
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use newtype instead of data" #-}
 {-# LANGUAGE BlockArguments #-}
