@@ -312,7 +312,12 @@ pickASolution  suds = listToMaybe listOfSolutions
 -- produces instructions for reading the Sudoku from the given file, 
 -- solving it, and printing the answer
 readAndSolve :: FilePath -> IO ()
-readAndSolve path = undefined
+readAndSolve path = do 
+                       sudoku <- readSudoku path
+                       let solvedSudoku = solve sudoku
+                       printSolvedSudoku solvedSudoku
+                       where printSolvedSudoku Nothing = putStrLn "No solution found"
+                             printSolvedSudoku s       = printSudoku $ fromJust $ s
 
 -- * F3
 -- that checks, given two Sudokus, whether the first one is a solution 
