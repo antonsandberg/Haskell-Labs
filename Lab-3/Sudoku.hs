@@ -279,14 +279,33 @@ prop_update_updated s (row, col) c = prop_bangBangEquals_correct (last (take (ro
 -- or returning Nothing if it's empty, this to make use of 
 -- Haskell's lazy evaluation
 
+
+
+-- My Old Solution!!!!
+
+solve :: Sudoku -> Maybe Sudoku
+solve s | not (isOkay s) = Nothing -- The sudoku is already invalid!
+        | null (blanks s) = Just s -- Sudoku is already finished   
+        | otherwise = listToMaybe $ catMaybes possibleSolutions where
+            updatedSudokus = [update s (head (blanks s)) (Just x) | x <- [1..9]]
+            possibleSolutions = [solve s' | s' <- updatedSudokus]
+
+          
+{-
 solve :: Sudoku -> Maybe Sudoku
 solve s = listToMaybe $ solve' s
 
-solve' :: Sudoku -> [Sudoku]
-solve' s = undefined
+--solve' :: Sudoku -> [Sudoku]
+testSolve s = [update s (head (blanks s)) (Just x) | x <-[1..9]]
+testSolve2 s = [solve s' | s' <- testSolve s]
+
+pickASolution :: [Maybe Sudoku] -> Maybe Sudoku
+pickASolution  suds = listToMaybe listOfSolutions
+  where listOfSolutions = catMaybes suds
+
 -- Make use of the backtracking algorithm (which should be some version of DFS)
 -- however I can't really understand it at the moment
-
+-}
 
 
 -- * F2
