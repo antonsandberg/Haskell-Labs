@@ -274,8 +274,18 @@ prop_update_updated s (row, col) c = prop_bangBangEquals_correct (last (take (ro
 ------------------------------------------------------------------------------
 
 -- * F1
+-- solve' calculates all valid solution
+-- while solve uses listToMaybe to only grab the first element of solve'
+-- or returning Nothing if it's empty, this to make use of 
+-- Haskell's lazy evaluation
+
 solve :: Sudoku -> Maybe Sudoku
-solve s = undefined
+solve s = listToMaybe $ solve' s
+
+solve' :: Sudoku -> [Sudoku]
+solve' s = undefined
+-- Make use of the backtracking algorithm (which should be some version of DFS)
+-- however I can't really understand it at the moment
 
 
 
@@ -293,3 +303,6 @@ isSolutionOf :: Sudoku -> Sudoku -> Bool
 isSolutionOf s1 s2 = undefined
 
 -- * F4
+
+prop_SolveSound :: Sudoku -> Property
+prop_SolveSound s = undefined
