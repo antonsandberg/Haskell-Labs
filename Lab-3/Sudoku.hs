@@ -237,8 +237,8 @@ type Pos = (Int,Int)
 blanks :: Sudoku -> [Pos]
 blanks = undefined
 
---prop_blanks_allBlanks :: ...
---prop_blanks_allBlanks =
+--prop_blanks_allBlanks :: Sudoku -> Bool
+--prop_blanks_allBlanks = length (blanks allBlankSudoku) == 9*9 
 
 
 -- * E2
