@@ -234,40 +234,62 @@ type Pos = (Int,Int)
 
 -- * E1
 
+-- Gives a list of all postions were the sudoku is blank
+-- Using a list comprehension and some simple math
+-- to grab all the indices in tuples
 blanks :: Sudoku -> [Pos]
-blanks = undefined
+blanks s = [(x `div` 9, x `mod` 9) | x <- elemIndices Nothing $ concat $ rows s] 
 
---prop_blanks_allBlanks :: Sudoku -> Bool
---prop_blanks_allBlanks = length (blanks allBlankSudoku) == 9*9 
-
+-- Just checkign the length of it's a "whole" Sudoku
+prop_blanks_allBlanks :: Bool
+prop_blanks_allBlanks = length (blanks allBlankSudoku) == 9*9
 
 -- * E2
 
-(!!=) :: [a] -> (Int,a) -> [a]
-xs !!= (i,y) = undefined
+(!!=) :: [a] -> (Int, a) -> [a]
+(x:xs) !!= (0,y) = y:xs
+(x:xs) !!= (i,y) = x: xs !!= (i-1,y)
 
---prop_bangBangEquals_correct :: ...
---prop_bangBangEquals_correct =
 
+prop_bangBangEquals_correct :: Eq a => [a] -> (Int, a) -> Bool
+prop_bangBangEquals_correct x pair = a && b where
+  a = length (x !!= pair) == length x
+  b =  ((x !!= pair) !! fst pair) == snd pair
 
 -- * E3
 
 update :: Sudoku -> Pos -> Cell -> Sudoku
-update = undefined
+update s (row, col) c = Sudoku $ updateHelper (rows s) (row, col) c
 
---prop_update_updated :: ...
---prop_update_updated =
+updateHelper :: [Row] -> Pos -> Cell -> [Row]
+updateHelper (r:rs) (0, col) c = (r !!= (col, c)) : rs
+updateHelper (r:rs) (row, col) c = r : updateHelper rs (row-1, col) c
 
+
+--prop_update_updated :: Sudoku -> (Int, Int) -> Cell -> (a, Int) -> Cell -> [Bool]
+--prop_update_updated :: Sudoku -> (Int, Cell) -> t1 -> t2
+prop_update_updated :: Sudoku -> (Int, Int) -> Cell -> Bool
+prop_update_updated s (row, col) c = prop_bangBangEquals_correct (last (take (row+1) (rows (update s (row, col) c)))) (col, c)
 
 ------------------------------------------------------------------------------
 
 -- * F1
+solve :: Sudoku -> Maybe Sudoku
+solve s = undefined
+
 
 
 -- * F2
-
+-- produces instructions for reading the Sudoku from the given file, 
+-- solving it, and printing the answer
+readAndSolve :: FilePath -> IO ()
+readAndSolve path = undefined
 
 -- * F3
-
+-- that checks, given two Sudokus, whether the first one is a solution 
+-- (i.e. all blocks are okay, there are no blanks), and also whether the first one is a solution of the second one 
+-- (i.e. all digits in the second sudoku are maintained in the first one).
+isSolutionOf :: Sudoku -> Sudoku -> Bool
+isSolutionOf s1 s2 = undefined
 
 -- * F4
