@@ -316,7 +316,8 @@ readAndSolve path = do
                        sudoku <- readSudoku path
                        let solvedSudoku = solve sudoku
                        printSolvedSudoku solvedSudoku
-                       where printSolvedSudoku Nothing = putStrLn "No solution found"
+                       where printSolvedSudoku :: Maybe Sudoku -> IO ()
+                             printSolvedSudoku Nothing = putStrLn "No solution found"
                              printSolvedSudoku s       = printSudoku $ fromJust $ s
 
 -- * F3
@@ -324,7 +325,11 @@ readAndSolve path = do
 -- (i.e. all blocks are okay, there are no blanks), and also whether the first one is a solution of the second one 
 -- (i.e. all digits in the second sudoku are maintained in the first one).
 isSolutionOf :: Sudoku -> Sudoku -> Bool
-isSolutionOf s1 s2 = undefined
+isSolutionOf s1 s2 = isOkay s1 && null (blanks s1) && all (== True) (isSolutionOfHelp (concat(rows s1)) (concat(rows s2)))
+  where isSolutionOfHelp :: [Cell] -> [Cell] -> [Bool]
+        isSolutionOfHelp [] [] = []
+        isSolutionOfHelp (_:cs1) (Nothing:cs2) = True : isSolutionOfHelp cs1 cs2
+        isSolutionOfHelp (c1:cs1) (c2:cs2) = (c1 == c2) : isSolutionOfHelp cs1 cs2
 
 -- * F4
 
