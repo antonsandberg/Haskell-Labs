@@ -275,11 +275,11 @@ prop_update_updated s (row, col) c = prop_bangBangEquals_correct (last (take (ro
 
 -- * F1
 solve :: Sudoku -> Maybe Sudoku
-solve s | not (isOkay s) = Nothing -- First checking if the Sudoku is okay
+solve s | not (isOkay s) = Nothing  -- First checking if the Sudoku is okay
          | null (blanks s) = Just s -- Sudoku is already finished
 
          -- Otherwise fill the first available tile in all different ways and then continue from there
-         -- catMaybe takes care of the Nothings that will get produced and listToMaybe grabs
+         -- catMaybe takes care of the Nothings (that might be produced) that will get produced and listToMaybe grabs
          -- the first of these solutions
          | otherwise = listToMaybe $ catMaybes [solve oneFilled | oneFilled <- allOneFilledSudokus] where 
                        allOneFilledSudokus = [update s (head (blanks s)) (Just x) | x <- [1..9]]
