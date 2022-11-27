@@ -274,39 +274,15 @@ prop_update_updated s (row, col) c = prop_bangBangEquals_correct (last (take (ro
 ------------------------------------------------------------------------------
 
 -- * F1
--- solve' calculates all valid solution
--- while solve uses listToMaybe to only grab the first element of solve'
--- or returning Nothing if it's empty, this to make use of 
--- Haskell's lazy evaluation
-
-
-
--- My Old Solution!!!!
-
 solve :: Sudoku -> Maybe Sudoku
-solve s | not (isOkay s) = Nothing -- The sudoku is already invalid!
-        | null (blanks s) = Just s -- Sudoku is already finished   
-        | otherwise = listToMaybe $ catMaybes possibleSolutions where
-            updatedSudokus = [update s (head (blanks s)) (Just x) | x <- [1..9]]
-            possibleSolutions = [solve s' | s' <- updatedSudokus]
+solve s | not (isOkay s) = Nothing -- First checking if the Sudoku is okay
+         | null (blanks s) = Just s -- Sudoku is already finished
 
-          
-{-
-solve :: Sudoku -> Maybe Sudoku
-solve s = listToMaybe $ solve' s
-
---solve' :: Sudoku -> [Sudoku]
-testSolve s = [update s (head (blanks s)) (Just x) | x <-[1..9]]
-testSolve2 s = [solve s' | s' <- testSolve s]
-
-pickASolution :: [Maybe Sudoku] -> Maybe Sudoku
-pickASolution  suds = listToMaybe listOfSolutions
-  where listOfSolutions = catMaybes suds
-
--- Make use of the backtracking algorithm (which should be some version of DFS)
--- however I can't really understand it at the moment
--}
-
+         -- Otherwise fill the first available tile in all different ways and then continue from there
+         -- catMaybe takes care of the Nothings that will get produced and listToMaybe grabs
+         -- the first of these solutions
+         | otherwise = listToMaybe $ catMaybes [solve oneFilled | oneFilled <- allOneFilledSudokus] where 
+                       allOneFilledSudokus = [update s (head (blanks s)) (Just x) | x <- [1..9]]
 
 -- * F2
 -- produces instructions for reading the Sudoku from the given file, 
@@ -318,7 +294,7 @@ readAndSolve path = do
                        printSolvedSudoku solvedSudoku
                        where printSolvedSudoku :: Maybe Sudoku -> IO ()
                              printSolvedSudoku Nothing = putStrLn "No solution found"
-                             printSolvedSudoku s       = printSudoku $ fromJust $ s
+                             printSolvedSudoku s       = printSudoku $ fromJust s
 
 -- * F3
 -- that checks, given two Sudokus, whether the first one is a solution 
