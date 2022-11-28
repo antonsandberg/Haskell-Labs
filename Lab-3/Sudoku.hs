@@ -117,7 +117,7 @@ printSudoku s = mapM_ putStrLn (parseSudoku s) where
   parseSudoku s = [parseRow x | x  <- rows s]
   -------------------------------------------
   parseRow :: [Cell] -> String
-  parseRow ss = [parseElem s | s <- ss] 
+  parseRow ss = [parseElem s | s <- ss]
   -------------------------------------------
   parseElem :: Maybe Int -> Char
   parseElem (Just x) = intToDigit x
@@ -130,13 +130,13 @@ printSudoku s = mapM_ putStrLn (parseSudoku s) where
 
 readSudoku :: FilePath -> IO Sudoku
 readSudoku f = do x <- readFile f
-                  let sudokuList = lines x  
+                  let sudokuList = lines x
                   let sudoku = Sudoku (map rowsToList sudokuList)
                   if isSudoku sudoku then return sudoku -- <- Doing the mandatory check
                   else error "Stop importing an invalid Sudoku!" where
                     --------------------------------------------------
                     rowsToList :: [Char] -> [Cell]
-                    rowsToList = map charToCell 
+                    rowsToList = map charToCell
                     --------------------------------------------------
                     charToCell :: Char ->  Cell
                     charToCell '.'  = Nothing               -- if . return Nothing on it's place
@@ -161,24 +161,24 @@ readSudoku f = do x <- readFile f
 -- providing the 80/20 prob for the two different
 -- "cell types"
 cell :: Gen Cell
-cell = frequency [(2, fmap Just (choose (1, 9))), (8, return Nothing)]
+cell = frequency [(1, fmap Just (choose (1, 9))), (9, return Nothing)]
 
 
 -- * C2
 -- | an instance for generating Arbitrary Sudokus
 -- Double use of vectorOf to get our 9x9 board of cells
 
-instance Arbitrary Sudoku where  
+instance Arbitrary Sudoku where
   arbitrary :: Gen Sudoku
   arbitrary = do s <- vectorOf 9 (vectorOf 9 cell)
                  return (Sudoku s)
 
- 
+
 -- * C3
 -- Guess this is it, seems redundant however
 prop_Sudoku :: Sudoku -> Bool
 prop_Sudoku = isSudoku
-  
+
 ------------------------------------------------------------------------------
 
 type Block = [Cell] -- a Row is also a Cell
@@ -191,7 +191,7 @@ isOkayBlock :: Block -> Bool
 isOkayBlock b = not (or (anyJustDups (sort b))) where
   ----------------------------------------------------------------------
   anyJustDups :: Block -> [Bool]
-  anyJustDups (Nothing:Nothing:rest) = False : anyJustDups (Nothing:rest)  
+  anyJustDups (Nothing:Nothing:rest) = False : anyJustDups (Nothing:rest)
   anyJustDups (e1:e2:rest) = (e1 == e2) : anyJustDups (e2:rest)
   anyJustDups lastItem = [False] -- Will only get here if there is only one item left
 
@@ -238,7 +238,7 @@ type Pos = (Int,Int)
 -- Using a list comprehension and some simple math
 -- to grab all the indices in tuples
 blanks :: Sudoku -> [Pos]
-blanks s = [(x `div` 9, x `mod` 9) | x <- elemIndices Nothing $ concat $ rows s] 
+blanks s = [(x `div` 9, x `mod` 9) | x <- elemIndices Nothing $ concat $ rows s]
 
 -- Just checkign the length of it's a "whole" Sudoku
 prop_blanks_allBlanks :: Bool
@@ -281,14 +281,14 @@ solve s | not (isOkay s) = Nothing  -- First checking if the Sudoku is okay
          -- Otherwise fill the first available tile in all different ways and then continue from there
          -- catMaybe takes care of the Nothings (that might be produced) that will get produced and listToMaybe grabs
          -- the first of these solutions
-         | otherwise = listToMaybe $ catMaybes [solve oneFilled | oneFilled <- allOneFilledSudokus] where 
+         | otherwise = listToMaybe $ catMaybes [solve oneFilled | oneFilled <- allOneFilledSudokus] where
                        allOneFilledSudokus = [update s (head (blanks s)) (Just x) | x <- [1..9]]
 
 -- * F2
 -- produces instructions for reading the Sudoku from the given file, 
 -- solving it, and printing the answer
 readAndSolve :: FilePath -> IO ()
-readAndSolve path = do 
+readAndSolve path = do
                        sudoku <- readSudoku path
                        let solvedSudoku = solve sudoku
                        printSolvedSudoku solvedSudoku
@@ -310,4 +310,6 @@ isSolutionOf s1 s2 = isOkay s1 && null (blanks s1) && all (== True) (isSolutionO
 -- * F4
 
 prop_SolveSound :: Sudoku -> Property
-prop_SolveSound s = undefined
+prop_SolveSound s | isNothing (solve s) = property True -- if Sudoku can't be solved
+                  | otherwise = property $ isSolutionOf (fromJust $ solve s) s -- isSolutionOf check that sudoku s is valid 
+                                                                               -- and that solved sudoku solved s
