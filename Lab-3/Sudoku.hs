@@ -245,8 +245,9 @@ prop_blanks_allBlanks = length (blanks allBlankSudoku) == 9*9
 -- * E2
 
 (!!=) :: [a] -> (Int, a) -> [a]
-(x:xs) !!= (0,y) = y:xs
-(x:xs) !!= (i,y) = x: xs !!= (i-1,y)
+[] !!=     (_, _)    = []
+(x:xs) !!= (0,y)     = y:xs
+(x:xs) !!= (i,y)     = x: xs !!= (i-1,y)
 
 
 -- Check that the length of the updated list is the same
