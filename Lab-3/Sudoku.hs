@@ -1,5 +1,5 @@
-{- Lab 3A 
-   Date: 2022-11-21
+{- Lab 3B 
+   Date: 2022-11-228
    Authors: Zozk Mohamed and Anton Sandberg
    Lab group: - 48
  -}
