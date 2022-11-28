@@ -22,6 +22,9 @@ import Data.List
 type Cell = Maybe Int -- a single cell
 type Row  = [Cell]    -- a row is a list of cells
 
+-- instance Arbitrary a => Arbitrary (Blind a)
+-- instance Eq a => Eq (Blind a)
+
 data Sudoku = Sudoku [Row]
  deriving ( Show, Eq )
 
@@ -252,10 +255,12 @@ prop_blanks_allBlanks = length (blanks allBlankSudoku) == 9*9
 
 -- Check that the length of the updated list is the same
 -- As well as checking that the cell has changed value
-prop_bangBangEquals_correct :: Eq a => [a] -> (Int, a) -> Bool
+prop_bangBangEquals_correct ::  Eq a => [a] -> (Int, a) -> Bool
+prop_bangBangEquals_correct x (i, y) | (i > length x - 1) || (i < 0) = True
+prop_bangBangEquals_correct [] (_,_) = True
 prop_bangBangEquals_correct x pair = a && b where
-  a = length (x !!= pair) == length x
-  b =  ((x !!= pair) !! fst pair) == snd pair
+    a = length (x !!= pair) == length x
+    b =  ((x !!= pair) !! fst pair) == snd pair
 
 -- * E3
 -- Update a soduko with a given cell
@@ -268,6 +273,7 @@ updateHelper (r:rs) (row, col) c = r : updateHelper rs (row-1, col) c
 
 -- Check that a cell contains a particular cell value
 prop_update_updated :: Sudoku -> (Int, Int) -> Cell -> Bool
+prop_update_updated _ (row, col) c | (row < 0) || (col < 0) || (row > 8) || (col > 8) = True 
 prop_update_updated s (row, col) c = prop_bangBangEquals_correct (last (take (row+1) (rows (update s (row, col) c)))) (col, c)
 
 ------------------------------------------------------------------------------
