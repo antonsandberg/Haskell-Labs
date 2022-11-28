@@ -301,7 +301,7 @@ readAndSolve path = do
 -- (i.e. all blocks are okay, there are no blanks), and also whether the first one is a solution of the second one 
 -- (i.e. all digits in the second sudoku are maintained in the first one).
 isSolutionOf :: Sudoku -> Sudoku -> Bool
-isSolutionOf s1 s2 = isOkay s1 && null (blanks s1) && all (== True) (isSolutionOfHelp (concat(rows s1)) (concat(rows s2)))
+isSolutionOf s1 s2 = isOkay s1 && null (blanks s1) && and (isSolutionOfHelp (concat(rows s1)) (concat(rows s2)))
   where isSolutionOfHelp :: [Cell] -> [Cell] -> [Bool]
         isSolutionOfHelp [] [] = []
         isSolutionOfHelp (_:cs1) (Nothing:cs2) = True : isSolutionOfHelp cs1 cs2
