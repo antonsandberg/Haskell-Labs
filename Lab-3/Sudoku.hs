@@ -226,8 +226,6 @@ isOkay s = all isOkayBlock $ blocks s
 ---- Part A ends here --------------------------------------------------------
 ------------------------------------------------------------------------------
 ---- Part B starts here ------------------------------------------------------
-
-
 -- | Positions are pairs (row,column),
 -- (0,0) is top left corner, (8,8) is bottom left corner
 type Pos = (Int,Int)
@@ -240,7 +238,7 @@ type Pos = (Int,Int)
 blanks :: Sudoku -> [Pos]
 blanks s = [(x `div` 9, x `mod` 9) | x <- elemIndices Nothing $ concat $ rows s]
 
--- Just checkign the length of it's a "whole" Sudoku
+-- Just checking the length of it's a "whole" Sudoku
 prop_blanks_allBlanks :: Bool
 prop_blanks_allBlanks = length (blanks allBlankSudoku) == 9*9
 
@@ -251,13 +249,15 @@ prop_blanks_allBlanks = length (blanks allBlankSudoku) == 9*9
 (x:xs) !!= (i,y) = x: xs !!= (i-1,y)
 
 
+-- Check that the length of the updated list is the same
+-- As well as checking that the cell has changed value
 prop_bangBangEquals_correct :: Eq a => [a] -> (Int, a) -> Bool
 prop_bangBangEquals_correct x pair = a && b where
   a = length (x !!= pair) == length x
   b =  ((x !!= pair) !! fst pair) == snd pair
 
 -- * E3
-
+-- Update a soduko with a given cell
 update :: Sudoku -> Pos -> Cell -> Sudoku
 update s (row, col) c = Sudoku $ updateHelper (rows s) (row, col) c
 
@@ -265,9 +265,7 @@ updateHelper :: [Row] -> Pos -> Cell -> [Row]
 updateHelper (r:rs) (0, col) c = (r !!= (col, c)) : rs
 updateHelper (r:rs) (row, col) c = r : updateHelper rs (row-1, col) c
 
-
---prop_update_updated :: Sudoku -> (Int, Int) -> Cell -> (a, Int) -> Cell -> [Bool]
---prop_update_updated :: Sudoku -> (Int, Cell) -> t1 -> t2
+-- Check that a cell contains a particular cell value
 prop_update_updated :: Sudoku -> (Int, Int) -> Cell -> Bool
 prop_update_updated s (row, col) c = prop_bangBangEquals_correct (last (take (row+1) (rows (update s (row, col) c)))) (col, c)
 
@@ -301,14 +299,13 @@ readAndSolve path = do
 -- (i.e. all blocks are okay, there are no blanks), and also whether the first one is a solution of the second one 
 -- (i.e. all digits in the second sudoku are maintained in the first one).
 isSolutionOf :: Sudoku -> Sudoku -> Bool
-isSolutionOf s1 s2 = isOkay s1 && null (blanks s1) && and (isSolutionOfHelp (concat(rows s1)) (concat(rows s2)))
-  where isSolutionOfHelp :: [Cell] -> [Cell] -> [Bool]
-        isSolutionOfHelp [] [] = []
-        isSolutionOfHelp (_:cs1) (Nothing:cs2) = True : isSolutionOfHelp cs1 cs2
-        isSolutionOfHelp (c1:cs1) (c2:cs2) = (c1 == c2) : isSolutionOfHelp cs1 cs2
+isSolutionOf s1 s2 = isOkay s1 && null (blanks s1) && and (checkEveryCell (concat(rows s1)) (concat(rows s2)))
+  where checkEveryCell :: [Cell] -> [Cell] -> [Bool]
+        checkEveryCell [] [] = []
+        checkEveryCell (_:cs1) (Nothing:cs2) = checkEveryCell cs1 cs2
+        checkEveryCell (c1:cs1) (c2:cs2) = (c1 == c2) : checkEveryCell cs1 cs2
 
 -- * F4
-
 prop_SolveSound :: Sudoku -> Property
 prop_SolveSound s | isNothing (solve s) = property True -- if Sudoku can't be solved
                   | otherwise = property $ isSolutionOf (fromJust $ solve s) s -- isSolutionOf check that sudoku s is valid 
