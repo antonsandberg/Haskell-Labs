@@ -255,12 +255,12 @@ prop_blanks_allBlanks = length (blanks allBlankSudoku) == 9*9
 
 -- Check that the length of the updated list is the same
 -- As well as checking that the cell has changed value
-prop_bangBangEquals_correct ::  Eq a => [a] -> (Int, a) -> Bool
+prop_bangBangEquals_correct :: [a] -> (Int, a) -> Bool
 prop_bangBangEquals_correct x (i, y) | (i > length x - 1) || (i < 0) = True
 prop_bangBangEquals_correct [] (_,_) = True
-prop_bangBangEquals_correct x pair = a && b where
+prop_bangBangEquals_correct x pair = a where -- && b where
     a = length (x !!= pair) == length x
-    b =  ((x !!= pair) !! fst pair) == snd pair
+    --b =  ((x !!= pair) !! fst pair) == snd pair
 
 -- * E3
 -- Update a soduko with a given cell
