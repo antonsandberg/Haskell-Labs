@@ -161,7 +161,7 @@ readSudoku f = do x <- readFile f
 -- hlint recommended fmap, and need to use return
 -- since we only have one value for the other
 -- Using choose from the lectures as well as
--- providing the 90/10 prob for the two different
+-- providing the 80/20 prob for the two different
 -- "cell types"
 cell :: Gen Cell
 cell = frequency [(1, fmap Just (choose (1, 9))), (9, return Nothing)]
@@ -272,9 +272,14 @@ updateHelper (r:rs) (0, col) c = (r !!= (col, c)) : rs
 updateHelper (r:rs) (row, col) c = r : updateHelper rs (row-1, col) c
 
 -- Check that a cell contains a particular cell value
-prop_update_updated :: Sudoku -> (Int, Int) -> Cell -> Bool
-prop_update_updated _ (row, col) _ | (row < 0) || (col < 0) || (row > 8) || (col > 8) = True 
-prop_update_updated s (row, col) c = (rows (update s (row, col) c) !! row) !! col == c
+-- prop_update_updated :: Sudoku -> (Int, Int) -> Cell -> Bool
+-- prop_update_updated _ (row, col) c | (row < 0) || (col < 0) || (row > 8) || (col > 8) = True 
+-- prop_update_updated s (row, col) c = prop_bangBangEquals_correct (last (take (row+1) (rows (update s (row, col) c)))) (col, c)
+
+-- Check that a cell contains a particular cell value
+prop_update_updated' :: Sudoku -> (Int, Int) -> Cell -> Bool
+prop_update_updated' _ (row, col) c | (row < 0) || (col < 0) || (row > 8) || (col > 8) = True 
+prop_update_updated' s (row, col) c = (rows s !! row) !! col == c
 ------------------------------------------------------------------------------
 
 -- * F1
