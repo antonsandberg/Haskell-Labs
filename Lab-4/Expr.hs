@@ -6,6 +6,8 @@
 {-# LANGUAGE InstanceSigs #-}
 
 import Data.Aeson.Encoding (value)
+import Parsing
+
 
 
 -------------------------------------------------------------
@@ -93,9 +95,16 @@ eval (Cos e) v = Prelude.cos $ eval e v
 readExpr :: String -> Maybe Expr
 readExpr = undefined
 
+number	::	Parser	Integer
+number = read <$> oneOrMore digit
 
+expr,	term,	factor, numPars	:: Parser	Expr
 
+numPars	=	Num	<$>	number
 
+expr	=	foldl1	Add	<$>	chain	term	(char	'+')	
+term	=	foldl1	Mul<$>	chain	factor(char	'*')	
+factor	= number <|> char '(' *> expr <* char ')'  
 
 -------------------------------------------------------------
 -- *E
