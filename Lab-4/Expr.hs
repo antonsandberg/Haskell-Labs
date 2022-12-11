@@ -17,7 +17,7 @@ expr1 = Mul (Add (Num 3) (Num 4)) (Add (Add X (Num 3)) (Sin (Add (Num 3) (Num 4)
 
 expr2 = Add (Mul (Num 3) (Num 4)) (Add (Add X (Num 3)) (Cos (Add (Num 3) (Num 4))))
 
-
+expr3 = Sin X
 
 
 -------------------------------------------------------------
@@ -138,7 +138,8 @@ prop_ShowReadExpr e | isNothing (readExpr (showExpr e)) = True
 arbExpr :: Int -> Gen Expr
 --arbExpr i = frequency [(8, do Num <$> choose(0, 99)), (2, do return X), (1, do let e = arbExpr (i 'div' 2) return (Cos e) )]
 arbExpr i = frequency [(3, do Num <$> choose(-100, 100)), (3, do return X), 
-                      (i, genSin i), (i, genCos i), (i, genMul i), (i, genAdd i)]
+                      (i, genSin i), (i, genCos i), 
+                      (i, genMul i), (i, genAdd i)]
   where 
     -- Either choose sin or cos and i `div` 2
     genSin j = do 
@@ -232,3 +233,70 @@ differentiateHelper (Sin e) = Mul (Cos e) (differentiateHelper e)
 differentiateHelper (Cos e) = Mul (Num (-1.0)) (Mul (Sin e) (differentiateHelper e))
 
 
+-------------------------------------------------------------
+-- *Convertion functions for calc
+-------------------------------------------------------------
+
+
+-------------------------------------------------------------
+-- *H
+-------------------------------------------------------------
+width = 300
+height = 300
+scale = 0.04
+
+type Point = (Double, Double)
+points :: Expr -> Double -> (Int , Int) -> [Point]
+points e scale (width, height) = 
+  [(z, realToPix (eval e (pixToReal z))) | z <- [0..dh]]  where
+  dh = fromIntegral width
+  
+  -- converts a pixel x-coordinate to a real x-coordinate 
+  pixToReal :: Double -> Double 
+  pixToReal x = (x - dh/2)*scale
+  -- Has to be scaled with scape
+
+  -- converts a real y-coordinate to a pixel y-coordinate 
+  realToPix :: Double -> Double 
+  realToPix y = (fromIntegral height / 2) - (y / scale)
+  -- Has to be scaled by y/scale (inverse)
+
+  -- (-6, 6) -> (0,0)
+  -- (6, 6)  -> (300, 0)
+  -- (-6, 6) -> (0, 300)
+  -- (6, -6) -> (300, 300)
+  -- (0, 0)  -> (150, 150)
+  -- The scale used is 0.04 so keep that in mind
+  -- Will probably become useful when 
+  -- Real values ranges from -6 -> 6 for both x and y
+  -- Canvas values goes from 0 -> 300 for both x and y
+  -- These are in the example but it's suppose to be general
+  -- Otherwise the zoom function won't work
+
+
+-------------------------------------------------------------
+-- *I
+-------------------------------------------------------------
+
+--readAndDraw :: Element -> Canvas -> UI ()
+--readAndDraw e c = undefined
+
+--path :: String -> [Point] -> Canvas -> UI ()
+--path s ps c = undefined
+-- Use path to draw the points after defining them
+
+-------------------------------------------------------------
+-- *J
+-------------------------------------------------------------
+-- Also implement zooming
+
+-------------------------------------------------------------
+-- *K
+-------------------------------------------------------------
+{-The recommended solution is to let the differentiated expression 
+replace the expression in the text entry field. 
+This allows you to differentiate many times, 
+and provides a nice way to test that showExpr and simplify 
+work as expected.)-}
+
+-- that is it!
