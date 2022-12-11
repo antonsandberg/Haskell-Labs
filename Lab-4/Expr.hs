@@ -241,16 +241,16 @@ differentiateHelper (Cos e) = Mul (Num (-1.0)) (Mul (Sin e) (differentiateHelper
 -------------------------------------------------------------
 -- *H
 -------------------------------------------------------------
-width = 300
-height = 300
-scale = 0.04
+--width = 300
+--height = 300
+--scale = 0.04
 
 type Point = (Double, Double)
 points :: Expr -> Double -> (Int , Int) -> [Point]
 points e scale (width, height) = 
   [(z, realToPix (eval e (pixToReal z))) | z <- [0..dh]]  where
   dh = fromIntegral width
-  
+
   -- converts a pixel x-coordinate to a real x-coordinate 
   pixToReal :: Double -> Double 
   pixToReal x = (x - dh/2)*scale
