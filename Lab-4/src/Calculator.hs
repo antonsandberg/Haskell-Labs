@@ -27,8 +27,9 @@ setup :: Window -> UI ()
 setup window =
   do -- Create them user interface elements
      canvas     <- mkCanvas canWidth canHeight   -- The drawing area
-     fx         <- mkHTML "<i>f</i>(<i>x</i>)="  -- The text "f(x)="
-     input      <- mkInput 20 "input formula"    -- The formula input
+     fx         <- mkHTML "<i> f </i>(<i>x</i>) = "  -- The text "f(x)="
+     nline      <- mkHTML "<br>"  
+     input      <- mkInput 20 " input formula"    -- The formula input
      draw       <- mkButton "Draw graph"         -- The draw button
      inZoom     <- mkButton "Zoom in"            -- The zoom buttons (added these last 2)
      outZoom    <- mkButton "Zoom out"
@@ -37,13 +38,15 @@ setup window =
        -- in italics.
 
      -- Add the user interface elements to the page, creating a specific layout
-     formula <- row [pure fx,pure input]
-     getBody window #+ [column [pure canvas,pure formula,pure draw, 
-      pure inZoom, pure outZoom, pure diff]] -- <-- I added these
+     formula <- row [pure fx,pure input, pure draw, 
+      pure diff]
+     zoom <- row [pure inZoom, pure outZoom]
+     getBody window #+ [column [pure canvas, pure zoom, pure nline, pure formula]] -- <-- I added these
 
      -- Styling
-     getBody window # set style [("backgroundColor","lightblue"),
-                                 ("textAlign","center")]
+     getBody window # set style [("backgroundColor","#2b3d51"),
+                                 ("textAlign","center"), 
+                                 ("color","#FFF")]
      pure input # set style [("fontSize","14pt")]
 
      -- Interaction (install event handlers)
@@ -52,7 +55,6 @@ setup window =
      on UI.click     diff  $    \ _ -> diffAndDraw input canvas
      on UI.click     inZoom $   \ _ -> zoomAndDraw input canvas False -- False if in zoom
      on UI.click     outZoom $  \ _ -> zoomAndDraw input canvas True  -- True if out zoom True False-- <- need to
-                                                                -- CHANGE THIS
 
 
 readAndDraw :: Element -> Canvas -> UI ()
@@ -66,14 +68,12 @@ readAndDraw input canvas =
 
 
      set UI.fillStyle (UI.solidColor (UI.RGB 0 0 0)) (pure canvas)
-     UI.fillText formula (10,canHeight/2) canvas
-     -- path "blue" [(10,10),(canWidth-10,canHeight/2)] canvas
+     UI.fillText formula (10,290) canvas
      scaleValue <- liftIO $ readIORef canScale
      
-     -- let readE = fromMaybe $ readExpr formula
      case (readExpr formula) of
-      Just e -> path "blue" (points e scaleValue (canHeight, canWidth)) canvas
-      otherwise -> UI.fillText "Error" (10,canHeight/2) canvas
+      Just e -> path "#334960" (points e scaleValue (canHeight, canWidth)) canvas
+      otherwise -> UI.fillText "Error" (canWidth/2,canHeight/2) canvas
 
       
 diffAndDraw :: Element -> Canvas -> UI ()
@@ -87,13 +87,13 @@ diffAndDraw input canvas =
 
       scaleValue <- liftIO $ readIORef canScale
       set UI.fillStyle (UI.solidColor (UI.RGB 0 0 0)) (pure canvas)
-      UI.fillText (diffExp formula) (10,canHeight/2) canvas
+      UI.fillText (diffExp formula) (10,290) canvas
       element input # set UI.value (diffExp formula)
       --set UI.input # set UI.type_ showExpr (differentiate (fromJust (readExpr f)))
 
       case (readExpr formula) of
-        Just e -> path "red" (points (differentiate e) scaleValue (canHeight, canWidth)) canvas
-        otherwise -> UI.fillText "Error" (10,canHeight/2) canvas 
+        Just e -> path "#334960" (points (differentiate e) scaleValue (canHeight, canWidth)) canvas
+        otherwise -> UI.fillText "Error" (canWidth/2,canHeight/2) canvas 
       
       where
         diffExp f = showExpr (differentiate (fromJust (readExpr f)))
@@ -113,11 +113,11 @@ zoomAndDraw input canvas zoomInOrOut =
         else do liftIO $ writeIORef canScale (oldScale/1.5)
       
       set UI.fillStyle (UI.solidColor (UI.RGB 0 0 0)) (pure canvas)
-      UI.fillText formula (10,canHeight/2) canvas
+      UI.fillText formula (10,290) canvas
       newScale <- liftIO $ readIORef canScale
       case (readExpr formula) of
-        Just e -> path "green" (points e newScale (canHeight, canWidth)) canvas
-        otherwise -> UI.fillText "Error" (10,canHeight/2) canvas
+        Just e -> path "#334960" (points e newScale (canHeight, canWidth)) canvas
+        otherwise -> UI.fillText "Error" (canWidth/2,canHeight/2) canvas
 
 
 -------------------------------------------------------------
