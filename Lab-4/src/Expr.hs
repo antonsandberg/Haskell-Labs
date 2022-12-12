@@ -142,7 +142,8 @@ arbExpr i = frequency [(3, do Num <$> choose(-100, 100)), (3, do return X),
                       (i, genSin i), (i, genCos i), 
                       (i, genMul i), (i, genAdd i)]
   where 
-    -- Either choose sin or cos and i `div` 2
+    -- Either choose sin, cos, add, mul and divide i by two
+    -- to choose it less often (to not get too long of expressions)
     genSin j = do 
       e <- arbExpr (j `div` 2)
       return $ Sin e
@@ -159,7 +160,8 @@ arbExpr i = frequency [(3, do Num <$> choose(-100, 100)), (3, do return X),
     genMul j = do
       e1 <- arbExpr (j `div` 2)
       e2 <- arbExpr (j `div` 2)
-      return $ Mul e1 e2   
+      return $ Mul e1 e2  
+
 
 -------------------------------------------------------------
 -- *F
