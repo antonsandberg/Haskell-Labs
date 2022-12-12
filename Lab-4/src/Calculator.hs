@@ -7,11 +7,17 @@ import Graphics.UI.Threepenny.Core as UI
 import qualified Graphics.UI.Threepenny as UI
 import Expr
 import Data.Maybe
+import Data.IORef
+import System.IO.Unsafe
 
-canWidth,canHeight, canScale :: Num a => a
+
+
+canWidth,canHeight :: Num a => a
 canWidth  = 300
 canHeight = 300
-canScale = 0.04
+
+canScale :: IORef Double
+canScale = unsafePerformIO $ newIORef 0.04
 
 
 main :: IO ()
@@ -43,9 +49,9 @@ setup window =
      -- Interaction (install event handlers)
      on UI.click     draw  $    \ _ -> readAndDraw input canvas
      on valueChange' input $    \ _ -> readAndDraw input canvas
-     on UI.click     diff  $    \ _ -> readAndDraw input canvas 
-     on UI.click     inZoom $   \ _ -> readAndDraw input canvas -- True False False
-     on UI.click     outZoom $  \ _ -> readAndDraw input canvas -- False True False-- <- need to
+     on UI.click     diff  $    \ _ -> diffAndDraw input canvas
+     on UI.click     inZoom $   \ _ -> zoomAndDraw input canvas False -- False if in zoom
+     on UI.click     outZoom $  \ _ -> zoomAndDraw input canvas True  -- True if out zoom True False-- <- need to
                                                                 -- CHANGE THIS
 
 
@@ -62,16 +68,56 @@ readAndDraw input canvas =
      set UI.fillStyle (UI.solidColor (UI.RGB 0 0 0)) (pure canvas)
      UI.fillText formula (10,canHeight/2) canvas
      -- path "blue" [(10,10),(canWidth-10,canHeight/2)] canvas
-     readE <- fromMaybe $ readExpr formula
-     --if readE == Nothing 
-      --then UI.fillText "Wrong formula" (10,canHeight/2) canvas 
-     path "blue" (points readE canScale (canHeight, canWidth)) canvas
-     --return ()
+     scaleValue <- liftIO $ readIORef canScale
+     
+     -- let readE = fromMaybe $ readExpr formula
+     case (readExpr formula) of
+      Just e -> path "blue" (points e scaleValue (canHeight, canWidth)) canvas
+      otherwise -> UI.fillText "Error" (10,canHeight/2) canvas
 
+      
+diffAndDraw :: Element -> Canvas -> UI ()
+diffAndDraw input canvas =
+  do -- Get the current formula (a String) from the input element
+      formula <- get value input
+      -- Clear the canvas
+      clearCanvas canvas
+      -- The following code draws the formula text in the canvas and a blue line.
+      -- It should be replaced with code that draws the graph of the function.
 
+      scaleValue <- liftIO $ readIORef canScale
+      set UI.fillStyle (UI.solidColor (UI.RGB 0 0 0)) (pure canvas)
+      UI.fillText (diffExp formula) (10,canHeight/2) canvas
+      element input # set UI.value (diffExp formula)
+      --set UI.input # set UI.type_ showExpr (differentiate (fromJust (readExpr f)))
 
-  
+      case (readExpr formula) of
+        Just e -> path "red" (points (differentiate e) scaleValue (canHeight, canWidth)) canvas
+        otherwise -> UI.fillText "Error" (10,canHeight/2) canvas 
+      
+      where
+        diffExp f = showExpr (differentiate (fromJust (readExpr f)))
 
+zoomAndDraw :: Element -> Canvas -> Bool -> UI ()
+zoomAndDraw input canvas zoomInOrOut =
+  do -- Get the current formula (a String) from the input element
+      formula <- get value input
+      -- Clear the canvas
+      clearCanvas canvas
+      -- The following code draws the formula text in the canvas and a blue line.
+      -- It should be replaced with code that draws the graph of the function.
+      oldScale <- liftIO $ readIORef canScale
+
+      if zoomInOrOut == True 
+        then do liftIO $ writeIORef canScale (oldScale*1.5)
+        else do liftIO $ writeIORef canScale (oldScale/1.5)
+      
+      set UI.fillStyle (UI.solidColor (UI.RGB 0 0 0)) (pure canvas)
+      UI.fillText formula (10,canHeight/2) canvas
+      newScale <- liftIO $ readIORef canScale
+      case (readExpr formula) of
+        Just e -> path "green" (points e newScale (canHeight, canWidth)) canvas
+        otherwise -> UI.fillText "Error" (10,canHeight/2) canvas
 
 
 -------------------------------------------------------------
@@ -95,31 +141,9 @@ points e scale (width, height) =
   realToPix y = (fromIntegral height / 2) - (y / scale)
   -- Has to be scaled by y/scale (inverse)
 
-
   -- (-6, 6) -> (0,0)
   -- (6, 6)  -> (300, 0)
   -- (-6, 6) -> (0, 300)
   -- (6, -6) -> (300, 300)
   -- (0, 0)  -> (150, 150)
-  -- The scale used is 0.04 so keep that in mind
-  -- Will probably become useful when 
-  -- Real values ranges from -6 -> 6 for both x and y
-  -- Canvas values goes from 0 -> 300 for both x and y
-  -- These are in the example but it's suppose to be general
-  -- Otherwise the zoom function won't work
 
--------------------------------------------------------------
--- *J
--------------------------------------------------------------
--- Also implement zooming
-
--------------------------------------------------------------
--- *K
--------------------------------------------------------------
-{-The recommended solution is to let the differentiated expression 
-replace the expression in the text entry field. 
-This allows you to differentiate many times, 
-and provides a nice way to test that showExpr and simplify 
-work as expected.)-}
-
--- that is it!

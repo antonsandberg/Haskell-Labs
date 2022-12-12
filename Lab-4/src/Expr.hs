@@ -86,7 +86,6 @@ showFactorCosSin X        = showExpr X
 showFactorCosSin e        = "(" ++ showExpr e ++ ")"
 
 instance Show Expr where
-  --show :: Expr -> String
   show = showExpr
 
 -------------------------------------------------------------
@@ -192,6 +191,8 @@ simplifyHelper (Add e1 e2)              = Add (simplifyHelper e1) (simplifyHelpe
 simplifyHelper (Mul (Num x1) (Num x2))  = Num (x1*x2)
 simplifyHelper (Mul _ (Num 0.0))        = Num 0
 simplifyHelper (Mul (Num 0.0) _)        = Num 0
+simplifyHelper (Mul (Num 1.0) e2)       = simplifyHelper e2
+simplifyHelper (Mul e1 (Num 1.0))       = simplifyHelper e1
 -- Otherwise
 simplifyHelper (Mul e1 e2)              = Mul (simplifyHelper e1) (simplifyHelper e2)
 
@@ -200,8 +201,6 @@ simplifyHelper (Mul e1 e2)              = Mul (simplifyHelper e1) (simplifyHelpe
 -- we won't be able to use the function
 simplifyHelper (Sin e) = Sin (simplifyHelper e)
 simplifyHelper (Cos e) = Cos (simplifyHelper e)
-
-
 
 -------------------------------------------------------------
 -- *G
@@ -233,8 +232,3 @@ differentiateHelper (Mul e1 e2) = Add (Mul (differentiateHelper e1) e2) (Mul e1 
 -- Cos and sin rules
 differentiateHelper (Sin e) = Mul (Cos e) (differentiateHelper e)
 differentiateHelper (Cos e) = Mul (Num (-1.0)) (Mul (Sin e) (differentiateHelper e))
-
-
--------------------------------------------------------------
--- *Convertion functions for calc
--------------------------------------------------------------
