@@ -131,13 +131,13 @@ instance Arbitrary Expr where
   arbitrary = sized arbExpr
 
 -- says that first showing and then reading should yield the same
--- as expression
+-- as expression -> check that it does
 prop_ShowReadExpr :: Expr -> Bool
 prop_ShowReadExpr e | isNothing (readExpr (showExpr e)) = True
                     | otherwise                         = showExpr (fromJust (readExpr (showExpr e))) == showExpr e
 
 arbExpr :: Int -> Gen Expr
---arbExpr i = frequency [(8, do Num <$> choose(0, 99)), (2, do return X), (1, do let e = arbExpr (i 'div' 2) return (Cos e) )]
+
 arbExpr i = frequency [(3, do Num <$> choose(-100, 100)), (3, do return X), 
                       (i, genSin i), (i, genCos i), 
                       (i, genMul i), (i, genAdd i)]
@@ -164,9 +164,8 @@ arbExpr i = frequency [(3, do Num <$> choose(-100, 100)), (3, do return X),
 -------------------------------------------------------------
 -- *F
 -------------------------------------------------------------
--- Will just pattern match into oblivion and maybe do some
--- more general stuff later, not even sure that it's possible though
-
+-- We want to simplify a number of times before it's all
+-- as far is it can go, therefor do it recursively
 simplify :: Expr -> Expr
 simplify e = do
   let simplified = simplifyHelper e
@@ -179,15 +178,37 @@ simplifyHelper (Num x) = Num x
 simplifyHelper X = X
 
 -- Structure them in different operators for some structure
+-- The add part
 simplifyHelper (Add (Num x1) (Num 0.0)) = Num x1
 simplifyHelper (Add (Num 0.0) (Num x2)) = Num x2
 simplifyHelper (Add (Num x1) (Num x2))  = Num (x1+x2)
 simplifyHelper (Add X (Num 0.0))        = X
 simplifyHelper (Add e1 (Num 0.0))       = simplifyHelper e1
 simplifyHelper (Add (Num 0.0) e2)       = simplifyHelper e2
+
+-- These might be too much?
+simplifyHelper (Add (Add (Num x1) (Num x2)) (Add (Num x3) (Num x4))) = Num (x1+x2+x3+x4)
+simplifyHelper (Add (Add (Num x1) (Num x2)) (Add (Num x3) e)) = (Add (Num (x1+x2+x3)) (simplifyHelper e))
+simplifyHelper (Add (Add (Num x1) (Num x2)) (Add e (Num x3))) = (Add (Num (x1+x2+x3)) (simplifyHelper e))
+simplifyHelper (Add (Add (Num x1) e) (Add (Num x2) (Num x3))) = (Add (Num (x1+x2+x3)) (simplifyHelper e))
+simplifyHelper (Add (Add e (Num x1)) (Add (Num x2) (Num x3))) = (Add (Num (x1+x2+x3)) (simplifyHelper e))
+
+-- Not sure if this might be too much? (Also not working and I'm too tired to figure out why)
+-- simplifyHelper (Add (Add (Num x1) X) (Add (Num x2) X)) = Add ((Num (x1+x2)) (Mul (Num 2.0) X))
+-- simplifyHelper (Add (Add X (Num x1)) (Add X (Num x2))) = Add ((Num (x1+x2)) (Mul (Num 2.0) X))
+-- simplifyHelper (Add (Add (Num x1) X) (Add X (Num x2))) = Add ((Num (x1+x2)) (Mul (Num 2.0) X))
+-- simplifyHelper (Add (Add X X) (Add (Num x1) (Num x2))) = Add ((Num (x1+x2)) (Mul (Num 2.0) X))
+-- simplifyHelper (Add (Add (Num x1) (Num x2)) (Add X X)) = Add ((Num (x1+x2)) (Mul (Num 2.0) X))
+
+-- simplifyHelper (Add (Add X e) (Add X X)) = Add (e (Mul (Num 3.0) X))
+-- simplifyHelper (Add (Add e X) (Add X X)) = Add (e (Mul (Num 3.0) X))
+-- simplifyHelper (Add (Add X X) (Add e X)) = Add (e (Mul (Num 3.0) X))
+-- simplifyHelper (Add (Add X X) (Add X e)) = Add (e (Mul (Num 3.0) X))
+
 -- Otherwise
 simplifyHelper (Add e1 e2)              = Add (simplifyHelper e1) (simplifyHelper e2)
 
+-- The mul part
 simplifyHelper (Mul (Num x1) (Num x2))  = Num (x1*x2)
 simplifyHelper (Mul _ (Num 0.0))        = Num 0
 simplifyHelper (Mul (Num 0.0) _)        = Num 0
@@ -202,6 +223,11 @@ simplifyHelper (Mul e1 e2)              = Mul (simplifyHelper e1) (simplifyHelpe
 simplifyHelper (Sin e) = Sin (simplifyHelper e)
 simplifyHelper (Cos e) = Cos (simplifyHelper e)
 
+-- Not sure if this is asked but since we are suppose to check
+-- it can't hurt right?
+prop_Simplify :: Expr -> Double -> Bool
+prop_Simplify e n = eval e n == eval (simplify e) n
+ 
 -------------------------------------------------------------
 -- *G
 -------------------------------------------------------------
