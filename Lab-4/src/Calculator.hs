@@ -6,10 +6,12 @@ import ThreepennyPages
 import Graphics.UI.Threepenny.Core as UI
 import qualified Graphics.UI.Threepenny as UI
 import Expr
+import Data.Maybe
 
-canWidth,canHeight :: Num a => a
+canWidth,canHeight, canScale :: Num a => a
 canWidth  = 300
 canHeight = 300
+canScale = 0.04
 
 
 main :: IO ()
@@ -20,7 +22,7 @@ setup window =
   do -- Create them user interface elements
      canvas     <- mkCanvas canWidth canHeight   -- The drawing area
      fx         <- mkHTML "<i>f</i>(<i>x</i>)="  -- The text "f(x)="
-     input      <- mkInput 20 "x"                -- The formula input
+     input      <- mkInput 20 "input formula"    -- The formula input
      draw       <- mkButton "Draw graph"         -- The draw button
      inZoom     <- mkButton "Zoom in"            -- The zoom buttons (added these last 2)
      outZoom    <- mkButton "Zoom out"
@@ -31,7 +33,7 @@ setup window =
      -- Add the user interface elements to the page, creating a specific layout
      formula <- row [pure fx,pure input]
      getBody window #+ [column [pure canvas,pure formula,pure draw, 
-      pure inZoom, pure diff]] -- <-- I added these
+      pure inZoom, pure outZoom, pure diff]] -- <-- I added these
 
      -- Styling
      getBody window # set style [("backgroundColor","lightblue"),
@@ -39,10 +41,12 @@ setup window =
      pure input # set style [("fontSize","14pt")]
 
      -- Interaction (install event handlers)
-     on UI.click     draw  $ \ _ -> readAndDraw input canvas
-     on valueChange' input $ \ _ -> readAndDraw input canvas
-     on UI.click     diff  $ \ _ -> readAndDraw input canvas -- <- need to
-                                                            -- CHANGE THIS
+     on UI.click     draw  $    \ _ -> readAndDraw input canvas
+     on valueChange' input $    \ _ -> readAndDraw input canvas
+     on UI.click     diff  $    \ _ -> readAndDraw input canvas 
+     on UI.click     inZoom $   \ _ -> readAndDraw input canvas -- True False False
+     on UI.click     outZoom $  \ _ -> readAndDraw input canvas -- False True False-- <- need to
+                                                                -- CHANGE THIS
 
 
 readAndDraw :: Element -> Canvas -> UI ()
@@ -58,20 +62,27 @@ readAndDraw input canvas =
      set UI.fillStyle (UI.solidColor (UI.RGB 0 0 0)) (pure canvas)
      UI.fillText formula (10,canHeight/2) canvas
      -- path "blue" [(10,10),(canWidth-10,canHeight/2)] canvas
-     if readExpr(formula) == Nothing then UI.fillText "Wrong formula" (10,canHeight/2) canvas else path "blue" (points (readExpr(formula))) canvas
+     readE <- fromMaybe $ readExpr formula
+     --if readE == Nothing 
+      --then UI.fillText "Wrong formula" (10,canHeight/2) canvas 
+     path "blue" (points readE canScale (canHeight, canWidth)) canvas
+     --return ()
+
+
+
   
+
 
 
 -------------------------------------------------------------
 -- *H
 -------------------------------------------------------------
-width = 300
-height = 300
-scale = 0.04
 
+-- Calculates all the points as well as rounding them before converting them
+-- back to double
 points :: Expr -> Double -> (Int , Int) -> [Point]
 points e scale (width, height) = 
-  [(z, realToPix (eval e (pixToReal z))) | z <- [0..dh]]  where
+  [(z, fromIntegral (round (realToPix (eval e (pixToReal z))))) | z <- [0..dh]]  where
   dh = fromIntegral width
   
   -- converts a pixel x-coordinate to a real x-coordinate 

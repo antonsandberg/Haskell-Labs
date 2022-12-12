@@ -20,15 +20,15 @@
   (major1) == 2 && (major2) <  14 || \
   (major1) == 2 && (major2) == 14 && (minor) <= 2)
 #endif /* MIN_VERSION_QuickCheck */
-/* package aeson-2.1.1.0 */
+/* package aeson-2.0.2.0 */
 #ifndef VERSION_aeson
-#define VERSION_aeson "2.1.1.0"
+#define VERSION_aeson "2.0.2.0"
 #endif /* VERSION_aeson */
 #ifndef MIN_VERSION_aeson
 #define MIN_VERSION_aeson(major1,major2,minor) (\
   (major1) <  2 || \
-  (major1) == 2 && (major2) <  1 || \
-  (major1) == 2 && (major2) == 1 && (minor) <= 1)
+  (major1) == 2 && (major2) <  0 || \
+  (major1) == 2 && (major2) == 0 && (minor) <= 2)
 #endif /* MIN_VERSION_aeson */
 /* package base-4.14.3.0 */
 #ifndef VERSION_base
@@ -40,15 +40,15 @@
   (major1) == 4 && (major2) <  14 || \
   (major1) == 4 && (major2) == 14 && (minor) <= 3)
 #endif /* MIN_VERSION_base */
-/* package threepenny-gui-0.9.4.0 */
+/* package threepenny-gui-0.9.1.0 */
 #ifndef VERSION_threepenny_gui
-#define VERSION_threepenny_gui "0.9.4.0"
+#define VERSION_threepenny_gui "0.9.1.0"
 #endif /* VERSION_threepenny_gui */
 #ifndef MIN_VERSION_threepenny_gui
 #define MIN_VERSION_threepenny_gui(major1,major2,minor) (\
   (major1) <  0 || \
   (major1) == 0 && (major2) <  9 || \
-  (major1) == 0 && (major2) == 9 && (minor) <= 4)
+  (major1) == 0 && (major2) == 9 && (minor) <= 1)
 #endif /* MIN_VERSION_threepenny_gui */
 
 /* tool gcc-10 */
