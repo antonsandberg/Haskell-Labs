@@ -13,6 +13,7 @@ import Data.Char
 import Test.QuickCheck
 import Data.Maybe
 import Data.Functor
+import Data.List
 
 
 expr1 = Mul (Add (Num 3) (Num 4)) (Add (Add X (Num 3)) (Sin (Add (Num 3) (Num 4))))
@@ -20,6 +21,12 @@ expr1 = Mul (Add (Num 3) (Num 4)) (Add (Add X (Num 3)) (Sin (Add (Num 3) (Num 4)
 expr2 = Add (Mul (Num 3) (Num 4)) (Add (Add X (Num 3)) (Cos (Add (Num 3) (Num 4))))
 
 expr3 = Sin X
+
+expr5 = Add (Mul (Num 3) (Num 4)) (Add (Add (Num 4) (Num 3))  (Cos (Add (Add (Num 3) (Num 4)) (X))))
+
+expr6 = fromJust $ readExpr $ "4 + 3 + 5 + 6 +sin(x) + cos(x)"
+
+expr4 =  fromJust $ readExpr $ "sin (x*x*x*x) + 4*3*2 + (3+2)"
 
 
 -------------------------------------------------------------
@@ -50,7 +57,6 @@ mul = Mul
 sin,cos :: Expr -> Expr
 sin = Sin
 cos = Cos
-
 
 
 -- Counts the number of functions and operators in the given expression
@@ -185,6 +191,7 @@ simplifyHelper (Add (Num x1) (Num 0.0)) = Num x1
 simplifyHelper (Add (Num 0.0) (Num x2)) = Num x2
 simplifyHelper (Add (Num x1) (Num x2))  = Num (x1+x2)
 simplifyHelper (Add X (Num 0.0))        = X
+simplifyHelper (Add (Num 0.0) X)        = X
 simplifyHelper (Add e1 (Num 0.0))       = simplifyHelper e1
 simplifyHelper (Add (Num 0.0) e2)       = simplifyHelper e2
 
@@ -194,18 +201,6 @@ simplifyHelper (Add (Add (Num x1) (Num x2)) (Add (Num x3) e)) = (Add (Num (x1+x2
 simplifyHelper (Add (Add (Num x1) (Num x2)) (Add e (Num x3))) = (Add (Num (x1+x2+x3)) (simplifyHelper e))
 simplifyHelper (Add (Add (Num x1) e) (Add (Num x2) (Num x3))) = (Add (Num (x1+x2+x3)) (simplifyHelper e))
 simplifyHelper (Add (Add e (Num x1)) (Add (Num x2) (Num x3))) = (Add (Num (x1+x2+x3)) (simplifyHelper e))
-
--- Not sure if this might be too much? (Also not working and I'm too tired to figure out why)
--- simplifyHelper (Add (Add (Num x1) X) (Add (Num x2) X)) = Add ((Num (x1+x2)) (Mul (Num 2.0) X))
--- simplifyHelper (Add (Add X (Num x1)) (Add X (Num x2))) = Add ((Num (x1+x2)) (Mul (Num 2.0) X))
--- simplifyHelper (Add (Add (Num x1) X) (Add X (Num x2))) = Add ((Num (x1+x2)) (Mul (Num 2.0) X))
--- simplifyHelper (Add (Add X X) (Add (Num x1) (Num x2))) = Add ((Num (x1+x2)) (Mul (Num 2.0) X))
--- simplifyHelper (Add (Add (Num x1) (Num x2)) (Add X X)) = Add ((Num (x1+x2)) (Mul (Num 2.0) X))
-
--- simplifyHelper (Add (Add X e) (Add X X)) = Add (e (Mul (Num 3.0) X))
--- simplifyHelper (Add (Add e X) (Add X X)) = Add (e (Mul (Num 3.0) X))
--- simplifyHelper (Add (Add X X) (Add e X)) = Add (e (Mul (Num 3.0) X))
--- simplifyHelper (Add (Add X X) (Add X e)) = Add (e (Mul (Num 3.0) X))
 
 -- Otherwise
 simplifyHelper (Add e1 e2)              = Add (simplifyHelper e1) (simplifyHelper e2)
@@ -222,6 +217,8 @@ simplifyHelper (Mul e1 e2)              = Mul (simplifyHelper e1) (simplifyHelpe
 -- Don't think there is much to do for cos/sin
 -- however still have to declare them otherwise
 -- we won't be able to use the function
+simplifyHelper (Sin (Num x)) = fromJust $ readExpr $ show $ eval (Sin (Num x)) 0
+simplifyHelper (Cos (Num x)) = fromJust $ readExpr $ show $ eval (Cos (Num x)) 0
 simplifyHelper (Sin e) = Sin (simplifyHelper e)
 simplifyHelper (Cos e) = Cos (simplifyHelper e)
 

@@ -16,6 +16,9 @@ canWidth,canHeight :: Num a => a
 canWidth  = 300
 canHeight = 300
 
+-- Creating a "global" variable
+-- which we can change in the zoom functions
+-- to be able to rescale the window
 canScale :: IORef Double
 canScale = unsafePerformIO $ newIORef 0.04
 
@@ -41,12 +44,13 @@ setup window =
      formula <- row [pure fx,pure input, pure draw, 
       pure diff]
      zoom <- row [pure inZoom, pure outZoom]
-     getBody window #+ [column [pure canvas, pure zoom, pure nline, pure formula]] -- <-- I added these
+     getBody window #+ [column [pure canvas, pure zoom, pure nline, pure formula]] 
 
      -- Styling
      getBody window # set style [("backgroundColor","#2b3d51"),
                                  ("textAlign","center"), 
                                  ("color","#FFF")]
+     pure zoom  # set style [("paddingLeft", "35%")]
      pure input # set style [("fontSize","14pt")]
 
      -- Interaction (install event handlers)
@@ -54,7 +58,7 @@ setup window =
      on valueChange' input $    \ _ -> readAndDraw input canvas
      on UI.click     diff  $    \ _ -> diffAndDraw input canvas
      on UI.click     inZoom $   \ _ -> zoomAndDraw input canvas False -- False if in zoom
-     on UI.click     outZoom $  \ _ -> zoomAndDraw input canvas True  -- True if out zoom True False-- <- need to
+     on UI.click     outZoom $  \ _ -> zoomAndDraw input canvas True  -- True if out zoom 
 
 
 readAndDraw :: Element -> Canvas -> UI ()
@@ -65,7 +69,6 @@ readAndDraw input canvas =
      clearCanvas canvas
      -- The following code draws the formula text in the canvas and a blue line.
      -- It should be replaced with code that draws the graph of the function.
-
 
      set UI.fillStyle (UI.solidColor (UI.RGB 0 0 0)) (pure canvas)
      UI.fillText formula (10,290) canvas
@@ -89,7 +92,6 @@ diffAndDraw input canvas =
       set UI.fillStyle (UI.solidColor (UI.RGB 0 0 0)) (pure canvas)
       UI.fillText (diffExp formula) (10,290) canvas
       element input # set UI.value (diffExp formula)
-      --set UI.input # set UI.type_ showExpr (differentiate (fromJust (readExpr f)))
 
       case (readExpr formula) of
         Just e -> path "#334960" (points (differentiate e) scaleValue (canHeight, canWidth)) canvas
@@ -125,25 +127,19 @@ zoomAndDraw input canvas zoomInOrOut =
 -------------------------------------------------------------
 
 -- Calculates all the points as well as rounding them before converting them
--- back to double
+-- back to double for the graph reader to use 
 points :: Expr -> Double -> (Int , Int) -> [Point]
 points e scale (width, height) = 
-  [(z, fromIntegral (round (realToPix (eval e (pixToReal z))))) | z <- [0..dh]]  where
-  dh = fromIntegral width
-  
+  [(z, fromIntegral (round (realToPix (eval e (pixToReal z))))) | z <- [0..dw]]  where
+
+  dw = fromIntegral width
+  dh = fromIntegral height
   -- converts a pixel x-coordinate to a real x-coordinate 
   pixToReal :: Double -> Double 
-  pixToReal x = scale*(x - dh / 2)
-  -- Has to be scaled with scape
+  pixToReal x = scale*(x - dw / 2)
+  -- Has to be scaled with scale
 
   -- converts a real y-coordinate to a pixel y-coordinate 
   realToPix :: Double -> Double 
-  realToPix y = (fromIntegral height / 2) - (y / scale)
+  realToPix y = (dh / 2) - (y / scale)
   -- Has to be scaled by y/scale (inverse)
-
-  -- (-6, 6) -> (0,0)
-  -- (6, 6)  -> (300, 0)
-  -- (-6, 6) -> (0, 300)
-  -- (6, -6) -> (300, 300)
-  -- (0, 0)  -> (150, 150)
-
