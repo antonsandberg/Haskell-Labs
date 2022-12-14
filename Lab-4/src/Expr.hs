@@ -15,6 +15,9 @@ import Data.Maybe
 import Data.Functor
 import Data.List
 
+-------------------------------------------------------------
+-- Some test cases to test our code
+-------------------------------------------------------------
 
 expr1 = Mul (Add (Num 3) (Num 4)) (Add (Add X (Num 3)) (Sin (Add (Num 3) (Num 4))))
 
@@ -22,11 +25,13 @@ expr2 = Add (Mul (Num 3) (Num 4)) (Add (Add X (Num 3)) (Cos (Add (Num 3) (Num 4)
 
 expr3 = Sin X
 
+expr4 =  fromJust $ readExpr $ "sin (x*x*x*x) + 4*3*2 + (3+2)"
+
 expr5 = Add (Mul (Num 3) (Num 4)) (Add (Add (Num 4) (Num 3))  (Cos (Add (Add (Num 3) (Num 4)) (X))))
 
 expr6 = fromJust $ readExpr $ "4 + 3 + 5 + 6 +sin(x) + cos(x)"
 
-expr4 =  fromJust $ readExpr $ "sin (x*x*x*x) + 4*3*2 + (3+2)"
+expr7 = Cos X
 
 
 -------------------------------------------------------------
@@ -58,7 +63,6 @@ sin,cos :: Expr -> Expr
 sin = Sin
 cos = Cos
 
-
 -- Counts the number of functions and operators in the given expression
 size :: Expr -> Int
 size (Num _)      = 1
@@ -67,6 +71,7 @@ size (Add e1 e2)  = 1 + size e1 + size e2
 size (Mul e1 e2)  = 1 + size e1 + size e2
 size (Sin e)      = 1 + size e
 size (Cos e)      = 1 + size e
+
 
 -------------------------------------------------------------
 -- *B 
@@ -94,6 +99,7 @@ showFactorCosSin e        = "(" ++ showExpr e ++ ")"
 instance Show Expr where
   show = showExpr
 
+
 -------------------------------------------------------------
 -- *C
 -------------------------------------------------------------
@@ -107,6 +113,7 @@ eval (Add e1 e2) v  = eval e1 v + eval e2 v
 eval (Mul e1 e2) v  = eval e1 v * eval e2 v
 eval (Sin e) v      = Prelude.sin $ eval e v
 eval (Cos e) v      = Prelude.cos $ eval e v
+
 
 -------------------------------------------------------------
 -- *D
@@ -126,8 +133,10 @@ expr      = foldl1 Add <$> chain term (char '+')
 term      = foldl1 Mul <$> chain factor (char '*')
 factor    = parseX <|> (Num <$> readsP) <|> char '(' *> expr <* char ')' <|> parseSin <|> parseCos
 
+-- Helper function to remove whitespace
 removeSpaces :: [Char] -> [Char]
 removeSpaces = filter (not . isSpace)
+
 
 -------------------------------------------------------------
 -- *E
@@ -144,29 +153,23 @@ prop_ShowReadExpr e | isNothing (readExpr (showExpr e)) = True
 
 arbExpr :: Int -> Gen Expr
 
-arbExpr i = frequency [(3, do Num <$> choose(-100, 100)), (3, do return X), 
-                      (i, genSin i), (i, genCos i), 
-                      (i, genMul i), (i, genAdd i)]
+arbExpr i = frequency [(3, do Num <$> choose(-100, 100)), 
+                      (3, do return X), 
+                      (i, genSinCos i),
+                      (i, genAddMul i)]
   where 
     -- Either choose sin, cos, add, mul and divide i by two
     -- to choose it less often (to not get too long of expressions)
-    genSin j = do 
+    genSinCos j = do
+      trig <- oneof [do return Sin, do return Cos]
       e <- arbExpr (j `div` 2)
-      return $ Sin e
+      return $ trig e
     
-    genCos j = do
-      e <- arbExpr (j `div` 2)
-      return $ Cos e
-
-    genAdd j = do
+    genAddMul j = do
       e1 <- arbExpr (j `div` 2)
       e2 <- arbExpr (j `div` 2)
-      return $ Add e1 e2  
-  
-    genMul j = do
-      e1 <- arbExpr (j `div` 2)
-      e2 <- arbExpr (j `div` 2)
-      return $ Mul e1 e2  
+      op <- oneof [do return Mul, do return Add]
+      return $ op e1 e2
 
 
 -------------------------------------------------------------
@@ -178,7 +181,6 @@ simplify :: Expr -> Expr
 simplify e = do
   let simplified = simplifyHelper e
   if simplified == e then simplified else simplify simplified
-
 
 simplifyHelper :: Expr -> Expr
 -- Base cases (not sure if they are necessary)
@@ -217,13 +219,15 @@ simplifyHelper (Mul e1 e2)              = Mul (simplifyHelper e1) (simplifyHelpe
 -- Don't think there is much to do for cos/sin
 -- however still have to declare them otherwise
 -- we won't be able to use the function
+-- Just adding a eval when sin only contains a number
+-- Cause read in slack that was something you should do
 simplifyHelper (Sin (Num x)) = fromJust $ readExpr $ show $ eval (Sin (Num x)) 0
 simplifyHelper (Cos (Num x)) = fromJust $ readExpr $ show $ eval (Cos (Num x)) 0
 simplifyHelper (Sin e) = Sin (simplifyHelper e)
 simplifyHelper (Cos e) = Cos (simplifyHelper e)
 
 -- Not sure if this is asked but since we are suppose to check
--- it can't hurt right?
+-- create a prop function to make sure simplify works as intended
 prop_Simplify :: Expr -> Double -> Bool
 prop_Simplify e n = eval e n == eval (simplify e) n
  
@@ -242,7 +246,6 @@ prop_Simplify e n = eval e n == eval (simplify e) n
 
 differentiate :: Expr -> Expr
 differentiate e = simplify $ differentiateHelper e
-
 
 -- Should be done
 differentiateHelper :: Expr -> Expr

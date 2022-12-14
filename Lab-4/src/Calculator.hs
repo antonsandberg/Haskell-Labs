@@ -60,7 +60,7 @@ setup window =
      on UI.click     inZoom $   \ _ -> zoomAndDraw input canvas False -- False if in zoom
      on UI.click     outZoom $  \ _ -> zoomAndDraw input canvas True  -- True if out zoom 
 
-
+  
 readAndDraw :: Element -> Canvas -> UI ()
 readAndDraw input canvas =
   do -- Get the current formula (a String) from the input element
@@ -77,8 +77,7 @@ readAndDraw input canvas =
      case (readExpr formula) of
       Just e -> path "#334960" (points e scaleValue (canHeight, canWidth)) canvas
       otherwise -> UI.fillText "Error" (canWidth/2,canHeight/2) canvas
-
-      
+  
 diffAndDraw :: Element -> Canvas -> UI ()
 diffAndDraw input canvas =
   do -- Get the current formula (a String) from the input element
