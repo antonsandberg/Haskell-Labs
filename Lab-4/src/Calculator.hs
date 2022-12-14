@@ -71,7 +71,7 @@ readAndDraw input canvas =
      -- It should be replaced with code that draws the graph of the function.
 
      set UI.fillStyle (UI.solidColor (UI.RGB 0 0 0)) (pure canvas)
-     UI.fillText formula (10,290) canvas
+     UI.fillText (show $ simplify $ fromJust $ readExpr formula) (10,290) canvas
      scaleValue <- liftIO $ readIORef canScale
      
      case (readExpr formula) of
@@ -114,7 +114,7 @@ zoomAndDraw input canvas zoomInOrOut =
         else do liftIO $ writeIORef canScale (oldScale/1.5)
       
       set UI.fillStyle (UI.solidColor (UI.RGB 0 0 0)) (pure canvas)
-      UI.fillText formula (10,290) canvas
+      UI.fillText (show $ simplify $ fromJust $ readExpr formula) (10,290) canvas
       newScale <- liftIO $ readIORef canScale
       case (readExpr formula) of
         Just e -> path "#334960" (points e newScale (canHeight, canWidth)) canvas
