@@ -18,7 +18,7 @@ import Data.List
 -------------------------------------------------------------
 -- Some test cases to test our code
 -------------------------------------------------------------
-
+{-
 expr1 = Mul (Add (Num 3) (Num 4)) (Add (Add X (Num 3)) (Sin (Add (Num 3) (Num 4))))
 
 expr2 = Add (Mul (Num 3) (Num 4)) (Add (Add X (Num 3)) (Cos (Add (Num 3) (Num 4))))
@@ -33,11 +33,12 @@ expr6 = fromJust $ readExpr $ "4 + 3 + 5 + 6 +sin(x) + cos(x)"
 
 expr7 = Cos X
 
-
+-}
 -------------------------------------------------------------
 -- *A
 -------------------------------------------------------------
 -- Recursive datatype that represents expressions 
+{-
 data Expr = Num Double
             | Add Expr Expr
             | Mul Expr Expr
@@ -46,21 +47,21 @@ data Expr = Num Double
             | X
     deriving Eq
 
-
+-}
 -- -- Adding the critisism here
--- data BinOp = Add | Mul
---               deriving (Eq, Show)
+data BinOp = Add | Mul
+               deriving (Eq, Show)
 
--- data UniOp = Sin | Cos
---               deriving (Eq, Show)
+data UniOp = Sin | Cos
+               deriving (Eq, Show)
 
--- data Expr2 = Num Double
---               | Op BinOp Expr Expr
---               | Uni UniOp Expr Expr
---               | X
---               deriving (Eq, Show)    
+data Expr = Num Double
+               | Op BinOp Expr Expr
+               | Uni UniOp Expr
+               | X
+               deriving Eq    
 -- In order that we can run tests 
-
+{-
 x :: Expr
 x = X
 
@@ -74,22 +75,23 @@ mul = Mul
 sin,cos :: Expr -> Expr
 sin = Sin
 cos = Cos
+-}
+x :: Expr
+x = X
 
--- x :: Expr
--- x = X
+num :: Double -> Expr
+num = Num
 
--- num :: Double -> Expr
--- num = Num
+add,mul :: Expr -> Expr -> Expr
+add = Op Add 
+mul = Op Mul
 
--- add,mul :: Expr -> Expr -> Expr
--- add = Op Add 
--- mul = Op Mul
-
--- sin,cos :: Expr -> Expr
--- sin = Uni Sin
--- cos = Uni Cos
+sin,cos :: Expr -> Expr
+sin = Uni Sin
+cos = Uni Cos
 
 -- Counts the number of functions and operators in the given expression
+{-
 size :: Expr -> Int
 size (Num _)      = 1
 size X            = 1
@@ -97,13 +99,14 @@ size (Add e1 e2)  = 1 + size e1 + size e2
 size (Mul e1 e2)  = 1 + size e1 + size e2
 size (Sin e)      = 1 + size e
 size (Cos e)      = 1 + size e
+-}
 
 -- Counts the number of functions and operators in the given expression
--- size :: Expr -> Int
--- size (Num _)      = 1
--- size X            = 1
--- size (Op _ e1 e2)  = 1 + size e1 + size e2
--- size (Uni _ e)      = 1 + size e
+size :: Expr -> Int
+size (Num _)      = 1
+size X            = 1
+size (Op _ e1 e2)  = 1 + size e1 + size e2
+size (Uni _ e)      = 1 + size e
 
 
 
@@ -112,6 +115,7 @@ size (Cos e)      = 1 + size e
 -------------------------------------------------------------
 
 -- Converts any expression to a string
+{-
 showExpr :: Expr -> String
 showExpr (Num n)      = show n
 showExpr (Sin e)      = "sin " ++ showFactorCosSin e
@@ -129,25 +133,26 @@ showFactorCosSin (Sin a)  = showExpr (Sin a)
 showFactorCosSin (Cos a)  = showExpr (Cos a)
 showFactorCosSin X        = showExpr X
 showFactorCosSin e        = "(" ++ showExpr e ++ ")"
+-}
 
 -- -- Converts any expression to a string
--- showExpr :: Expr -> String
--- showExpr (Num n)      = show n
--- showExpr (Uni Sin e)      = "sin " ++ showFactorCosSin e
--- showExpr (Uni Cos e)      = "cos " ++ showFactorCosSin e
--- showExpr X            = "x"
--- showExpr (Op Add e1 e2)  = showExpr e1 ++ " + " ++ showExpr e2
--- showExpr (Op Mul e1 e2)    = showFactor e1 ++ " * " ++ showFactor e2
---      where showFactor :: Expr -> String
---            showFactor (Op Add a b) = "("++showExpr (Op Add a b)++")"
---            showFactor e         = showExpr e
+showExpr :: Expr -> String
+showExpr (Num n)      = show n
+showExpr (Uni Sin e)      = "sin " ++ showFactorCosSin e
+showExpr (Uni Cos e)      = "cos " ++ showFactorCosSin e
+showExpr X            = "x"
+showExpr (Op Add e1 e2)  = showExpr e1 ++ " + " ++ showExpr e2
+showExpr (Op Mul e1 e2)    = showFactor e1 ++ " * " ++ showFactor e2
+      where showFactor :: Expr -> String
+            showFactor (Op Add a b) = "("++showExpr (Op Add a b)++")"
+            showFactor e         = showExpr e
 
---            showFactorCosSin :: Expr -> String
---            showFactorCosSin (Num n)  = showExpr (Num n)
---            showFactorCosSin (Uni Sin a)  = showExpr (Sin a)
---            showFactorCosSin (Uni Cos a)  = showExpr (Cos a)
---            showFactorCosSin X        = showExpr X
---            showFactorCosSin e        = "(" ++ showExpr e ++ ")"
+showFactorCosSin :: Expr -> String
+showFactorCosSin (Num n)  = showExpr (Num n)
+showFactorCosSin (Uni Sin a)  = showExpr (Uni Sin a)
+showFactorCosSin (Uni Cos a)  = showExpr (Uni Cos a)
+showFactorCosSin X        = showExpr X
+showFactorCosSin e        = "(" ++ showExpr e ++ ")"
 
 
 
@@ -160,6 +165,7 @@ instance Show Expr where
 -------------------------------------------------------------
 
 -- Given an expression, and the value for the variable x, calculates the value of the expression
+{-
 eval :: Expr -> Double -> Double
 eval (Num n) _      = n
 eval X v            = v
@@ -168,17 +174,16 @@ eval (Add e1 e2) v  = eval e1 v + eval e2 v
 eval (Mul e1 e2) v  = eval e1 v * eval e2 v
 eval (Sin e) v      = Prelude.sin $ eval e v
 eval (Cos e) v      = Prelude.cos $ eval e v
+-}
 
--- eval :: Expr -> Double -> Double
--- eval (Num n) _      = n
--- eval X v            = v
+eval :: Expr -> Double -> Double
+eval (Num n) _      = n  
+eval X v            = v
 
--- eval (Op Add e1 e2) v  = eval e1 v + eval e2 v
--- eval (Op Mul e1 e2) v  = eval e1 v * eval e2 v
--- eval (Uni Sin e) v      = Prelude.sin $ eval e v
--- eval (Uni Cos e) v      = Prelude.cos $ eval e v
-
-
+eval (Op Add e1 e2) v  = eval e1 v + eval e2 v
+eval (Op Mul e1 e2) v  = eval e1 v * eval e2 v
+eval (Uni Sin e) v      = Prelude.sin $ eval e v
+eval (Uni Cos e) v      = Prelude.cos $ eval e v
 
 -------------------------------------------------------------
 -- *D
@@ -206,7 +211,7 @@ removeSpaces = filter (not . isSpace)
 -------------------------------------------------------------
 -- *E
 -------------------------------------------------------------
-
+{-
 instance Arbitrary Expr where
   arbitrary = sized arbExpr
 
@@ -218,7 +223,9 @@ instance Arbitrary Expr where
 prop_ShowReadExpr :: Expr -> Bool
 prop_ShowReadExpr e | isNothing (readExpr (showExpr e)) = True
                     | otherwise                         = showExpr (fromJust (readExpr (showExpr e))) == showExpr e
+-}
 
+{-
 arbExpr :: Int -> Gen Expr
 
 arbExpr i = frequency [(3, do Num <$> choose(-n, n)), 
@@ -239,34 +246,37 @@ arbExpr i = frequency [(3, do Num <$> choose(-n, n)),
       e2 <- arbExpr (j `div` 2)
       op <- oneof [do return Mul, do return Add]
       return $ op e1 e2
+-}
 
+{-
+arbExpr :: Int -> Gen Expr
 
-
--- arbExpr :: Int -> Gen Expr
-
--- arbExpr i = frequency [(3, do Num <$> choose(-n, n)), 
---                       (3, do return X), 
---                       (i, genSinCos i),
---                       (i, genAddMul i)]
---   where 
+arbExpr i = frequency [(3, do Num <$> choose(-n, n)), 
+                       (3, do return X), 
+                       (i, genSinCos i),
+                       (i, genAddMul i)]
+   where 
 --     -- Either choose sin, cos, add, mul and divide i by two
 --     -- to choose it less often (to not get too long of expressions)
---     n = 1000
---     genSinCos j = do
---       e <- arbExpr (j `div` 2)
---       uni <- elements [Uni Sin, Uni Cos]
---       return $ uni e
+     n = 1000
+     genSinCos j = do
+       e <- arbExpr (j `div` 2)
+       uni <- elements [Uni Sin, Uni Cos]
+       return $ uni e
     
---     genAddMul j = do
---       e1 <- arbExpr (j `div` 2)
---       e2 <- arbExpr (j `div` 2)
---       op <- elements [Op Mul, Op Add]
---       return $ op e1 e2
+     genAddMul j = do
+       e1 <- arbExpr (j `div` 2)
+       e2 <- arbExpr (j `div` 2)
+       op <- elements [Op Mul, Op Add]
+       return $ op e1 e2
+
+-}
 -- -------------------------------------------------------------
 -- *F
 -------------------------------------------------------------
 -- We want to simplify a number of times before it's all
 -- as far is it can go, therefor do it recursively
+{-
 simplify :: Expr -> Expr
 simplify e = do
   let simplified = simplifyHelper e
@@ -315,7 +325,7 @@ simplifyHelper (Sin (Num x)) = fromJust $ readExpr $ show $ eval (Sin (Num x)) 0
 simplifyHelper (Cos (Num x)) = fromJust $ readExpr $ show $ eval (Cos (Num x)) 0
 simplifyHelper (Sin e) = Sin (simplifyHelper e)
 simplifyHelper (Cos e) = Cos (simplifyHelper e)
-
+-}
 
 
 -- -- as far is it can go, therefor do it recursively
@@ -370,9 +380,10 @@ simplifyHelper (Cos e) = Cos (simplifyHelper e)
 
 -- Not sure if this is asked but since we are suppose to check
 -- create a prop function to make sure simplify works as intended
+{-
 prop_Simplify :: Expr -> Double -> Bool
 prop_Simplify e n = eval e n == eval (simplify e) n
- 
+-} 
 -------------------------------------------------------------
 -- *G
 -------------------------------------------------------------
@@ -385,7 +396,7 @@ prop_Simplify e n = eval e n == eval (simplify e) n
 -- not work the function more than necessary
 -- When we do it recursively we also take care 
 -- of the inner derivative (we think lol)
-
+{-
 differentiate :: Expr -> Expr
 differentiate e = simplify $ differentiateHelper e
 
@@ -400,19 +411,21 @@ differentiateHelper (Mul e1 e2) = Add (Mul (differentiateHelper e1) e2) (Mul e1 
 -- Cos and sin rules
 differentiateHelper (Sin e) = Mul (Cos e) (differentiateHelper e)
 differentiateHelper (Cos e) = Mul (Num (-1.0)) (Mul (Sin e) (differentiateHelper e))
+-}
 
-
--- differentiate :: Expr -> Expr
--- differentiate e = simplify $ differentiateHelper e
+{-
+differentiate :: Expr -> Expr
+differentiate e = simplify $ differentiateHelper e
 
 -- -- Should be done
--- differentiateHelper :: Expr -> Expr
--- differentiateHelper (Num _) = Num 0.0
--- differentiateHelper X = Num 1.0
--- differentiateHelper (Op Add e1 e2) = Op Add (differentiateHelper e1) (differentiateHelper e2)
+differentiateHelper :: Expr -> Expr
+differentiateHelper (Num _) = Num 0.0
+differentiateHelper X = Num 1.0
+differentiateHelper (Op Add e1 e2) = Op Add (differentiateHelper e1) (differentiateHelper e2)
 
 -- -- Multiplication rule
--- differentiateHelper (Op Mul e1 e2) = Op Add (Op Mul (differentiateHelper e1) e2) (Op Mul e1 (differentiateHelper e2))
+differentiateHelper (Op Mul e1 e2) = Op Add (Op Mul (differentiateHelper e1) e2) (Op Mul e1 (differentiateHelper e2))
 -- -- Cos and sin rules
--- differentiateHelper (Uni Sin e) = Op Mul (Uni Cos e) (differentiateHelper e)
--- differentiateHelper (Uni Cos e) = Op Mul (Num (-1.0)) (Op Mul (Uni Sin e) (differentiateHelper e))
+differentiateHelper (Uni Sin e) = Op Mul (Uni Cos e) (differentiateHelper e)
+differentiateHelper (Uni Cos e) = Op Mul (Num (-1.0)) (Op Mul (Uni Sin e) (differentiateHelper e))
+-}
