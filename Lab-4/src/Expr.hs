@@ -37,20 +37,6 @@ expr7 = Cos X
 -------------------------------------------------------------
 -- *A
 -------------------------------------------------------------
--- Adding the critisism here
-data BinOp = Add | Mul
-              deriving (Eq, Show)
-
-data UniOp = Sin | Cos
-              deriving (Eq, Show)
-
-data Expr2 = Num Double
-              | Op BinOp Expr Expr
-              | Uni UniOp Expr Expr
-              | X
-              deriving (Eq, Show)
-
-
 -- Recursive datatype that represents expressions 
 data Expr = Num Double
             | Add Expr Expr
@@ -60,6 +46,19 @@ data Expr = Num Double
             | X
     deriving Eq
 
+
+-- -- Adding the critisism here
+-- data BinOp = Add | Mul
+--               deriving (Eq, Show)
+
+-- data UniOp = Sin | Cos
+--               deriving (Eq, Show)
+
+-- data Expr2 = Num Double
+--               | Op BinOp Expr Expr
+--               | Uni UniOp Expr Expr
+--               | X
+--               deriving (Eq, Show)    
 -- In order that we can run tests 
 
 x :: Expr
@@ -243,7 +242,7 @@ arbExpr i = frequency [(3, do Num <$> choose(-n, n)),
 
 
 
-arbExpr :: Int -> Gen Expr
+-- arbExpr :: Int -> Gen Expr
 
 -- arbExpr i = frequency [(3, do Num <$> choose(-n, n)), 
 --                       (3, do return X), 
@@ -316,6 +315,58 @@ simplifyHelper (Sin (Num x)) = fromJust $ readExpr $ show $ eval (Sin (Num x)) 0
 simplifyHelper (Cos (Num x)) = fromJust $ readExpr $ show $ eval (Cos (Num x)) 0
 simplifyHelper (Sin e) = Sin (simplifyHelper e)
 simplifyHelper (Cos e) = Cos (simplifyHelper e)
+
+
+
+-- -- as far is it can go, therefor do it recursively
+-- simplify :: Expr -> Expr
+-- simplify e = do
+--   let simplified = simplifyHelper e
+--   if simplified == e then simplified else simplify simplified
+
+-- simplifyHelper :: Expr -> Expr
+-- -- Base cases (not sure if they are necessary)
+-- simplifyHelper (Num x) = Num x
+-- simplifyHelper X = X
+
+-- -- Structure them in different operators for some structure
+-- -- The add part
+-- simplifyHelper (Add (Num x1) (Num 0.0)) = Num x1
+-- simplifyHelper (Add (Num 0.0) (Num x2)) = Num x2
+-- simplifyHelper (Add (Num x1) (Num x2))  = Num (x1+x2)
+-- simplifyHelper (Add X (Num 0.0))        = X
+-- simplifyHelper (Add (Num 0.0) X)        = X
+-- simplifyHelper (Add e1 (Num 0.0))       = simplifyHelper e1
+-- simplifyHelper (Add (Num 0.0) e2)       = simplifyHelper e2
+
+-- -- These might be too much?
+-- simplifyHelper (Add (Add (Num x1) (Num x2)) (Add (Num x3) (Num x4))) = Num (x1+x2+x3+x4)
+-- simplifyHelper (Add (Add (Num x1) (Num x2)) (Add (Num x3) e)) = (Add (Num (x1+x2+x3)) (simplifyHelper e))
+-- simplifyHelper (Add (Add (Num x1) (Num x2)) (Add e (Num x3))) = (Add (Num (x1+x2+x3)) (simplifyHelper e))
+-- simplifyHelper (Add (Add (Num x1) e) (Add (Num x2) (Num x3))) = (Add (Num (x1+x2+x3)) (simplifyHelper e))
+-- simplifyHelper (Add (Add e (Num x1)) (Add (Num x2) (Num x3))) = (Add (Num (x1+x2+x3)) (simplifyHelper e))
+
+-- -- Otherwise
+-- simplifyHelper (Add e1 e2)              = Add (simplifyHelper e1) (simplifyHelper e2)
+
+-- -- The mul part
+-- simplifyHelper (Mul (Num x1) (Num x2))  = Num (x1*x2)
+-- simplifyHelper (Mul _ (Num 0.0))        = Num 0
+-- simplifyHelper (Mul (Num 0.0) _)        = Num 0
+-- simplifyHelper (Mul (Num 1.0) e2)       = simplifyHelper e2
+-- simplifyHelper (Mul e1 (Num 1.0))       = simplifyHelper e1
+-- -- Otherwise
+-- simplifyHelper (Mul e1 e2)              = Mul (simplifyHelper e1) (simplifyHelper e2)
+
+-- -- Don't think there is much to do for cos/sin
+-- -- however still have to declare them otherwise
+-- -- we won't be able to use the function
+-- -- Just adding a eval when sin only contains a number
+-- -- Cause read in slack that was something you should do
+-- simplifyHelper (Sin (Num x)) = fromJust $ readExpr $ show $ eval (Sin (Num x)) 0
+-- simplifyHelper (Cos (Num x)) = fromJust $ readExpr $ show $ eval (Cos (Num x)) 0
+-- simplifyHelper (Sin e) = Sin (simplifyHelper e)
+-- simplifyHelper (Cos e) = Cos (simplifyHelper e)
 
 -- Not sure if this is asked but since we are suppose to check
 -- create a prop function to make sure simplify works as intended
