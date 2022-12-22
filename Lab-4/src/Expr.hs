@@ -1,3 +1,5 @@
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use $>" #-}
 module Expr where
 
 {- Lab 4
@@ -160,7 +162,7 @@ showExpr (Num n)      = show n
 -- showExpr (Uni Sin e)      = "sin " ++ showFactorCosSin e
 -- showExpr (Uni Cos e)      = "cos " ++ showFactorCosSin e
 showExpr (Uni sc e)     = lowSc ++ " " ++ showFactorCosSin e 
-      where lowSc :: String
+      where lowSc :: String -- Making sure the parser is unaffected
             lowSc = [toLower c | c <- show sc]          
 
 showExpr X            = "x"
@@ -178,7 +180,7 @@ showFactorCosSin e        = "(" ++ showExpr e ++ ")"
 
 
 instance Show Expr where
-  -- show :: Expr -> String
+  show :: Expr -> String
   show = showExpr
 
 
@@ -401,8 +403,7 @@ prop_Simplify_sameValue :: Expr -> Double -> Bool
 prop_Simplify_sameValue e n = eval e n == eval (simplify e) n
  
 prop_Simplify_noJunk :: Expr -> Bool
-prop_Simplify_noJunk e = simplifyHelperBool simplified
-      where simplified = simplify e
+prop_Simplify_noJunk e = simplifyHelperBool $ simplify e
 
 -- Making sure there is no junk, returning False if it is
 simplifyHelperBool :: Expr -> Bool
