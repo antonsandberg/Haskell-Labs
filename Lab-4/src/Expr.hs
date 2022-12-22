@@ -160,10 +160,10 @@ showExpr :: Expr -> String
 showExpr (Num n)      = show n
 -- showExpr (Uni Sin e)      = "sin " ++ showFactorCosSin e
 -- showExpr (Uni Cos e)      = "cos " ++ showFactorCosSin e
-showExpr (Uni sc e)     = lowSc ++ " " ++ showFactorCosSin e 
-      where ssc = show sc
-            lowSc :: String -- Making sure the parser is unaffected
-            lowSc = toLower (head ssc):tail ssc
+showExpr (Uni sc e)     = show sc ++ " " ++ showFactorCosSin e 
+--      where ssc = show sc
+--            lowSc :: String -- Making sure the parser is unaffected
+--            lowSc = toLower (head ssc):tail ssc
 
 showExpr X                 = "x"
 showExpr (Op Add e1 e2)    = showExpr e1 ++ " + " ++ showExpr e2
