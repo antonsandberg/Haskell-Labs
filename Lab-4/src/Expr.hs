@@ -428,6 +428,29 @@ prop_Simplify_noJunk e = simplified == simplifyHelper simplified
       where simplified = simplify e
 
 
+-- simplifyHelperBool :: Expr -> Expr
+-- -- Base cases (not sure if they are necessary)
+-- simplifyHelperBool (Num x) = Num x
+-- simplifyHelperBool X = X
+
+-- simplifyHelperBool (Op Add (Num x1) (Num 0.0)) = Num x1
+-- simplifyHelperBool (Op Add (Num 0.0) (Num x2)) = Num x2
+-- -- Covers both Add and Mul
+-- simplifyHelperBool (Op op (Num x1) (Num x2))  = Num (getOp op x1 x2)
+
+-- simplifyHelperBool (Op Add X (Num 0.0))        = X
+-- simplifyHelperBool (Op Add (Num 0.0) X)        = X
+-- simplifyHelperBool (Op Add e1 (Num 0.0))       = simplifyHelperBool e1
+-- simplifyHelperBool (Op Add (Num 0.0) e2)       = simplifyHelperBool e2
+
+-- simplifyHelperBool (Op Mul _ (Num 0.0))        = Num 0
+-- simplifyHelperBool (Op Mul (Num 0.0) _)        = Num 0
+-- simplifyHelperBool (Op Mul (Num 1.0) e2)       = simplifyHelperBool e2
+-- simplifyHelperBool (Op Mul e1 (Num 1.0))       = simplifyHelperBool e1
+
+-- -- Otherwise (covers both Add and Mul)
+-- simplifyHelperBool (Op op e1 e2)              = Op op (simplifyHelperBool e1) (simplifyHelperBool e2)
+
 -- -------------------------------------------------------------
 -- -- *G
 -- -------------------------------------------------------------
