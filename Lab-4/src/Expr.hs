@@ -427,9 +427,8 @@ prop_Simplify_noJunk :: Expr -> Bool
 prop_Simplify_noJunk e = simplifyHelperBool simplified
       where simplified = simplify e
 
-
+-- Making sure there is no junk, returning False if it is
 simplifyHelperBool :: Expr -> Bool
--- Base cases (not sure if they are necessary)
 simplifyHelperBool (Num x) = True
 simplifyHelperBool X = True
 
