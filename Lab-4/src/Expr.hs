@@ -449,6 +449,9 @@ simplifyHelperBool (Op Mul (Num 1.0) e2)       = False
 simplifyHelperBool (Op Mul e1 (Num 1.0))       = False
 
 -- Otherwise (covers both Add and Mul)
+simplifyHelperBool (Uni uni (Num x)) = False
+simplifyHelperBool (Uni uni e) = True
+
 simplifyHelperBool (Op op e1 e2)              = simplifyHelperBool e1 && simplifyHelperBool e2
 
 -- -------------------------------------------------------------
