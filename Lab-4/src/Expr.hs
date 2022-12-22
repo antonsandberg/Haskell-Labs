@@ -8,29 +8,11 @@ module Expr where
 {-# LANGUAGE InstanceSigs #-}
 
 --import Data.Aeson.Encoding (value)
-import Parsing
-import Data.Char
+import Parsing ( chain, char, parse, readsP, (<|>), Parser )
+import Data.Char ( isSpace, toLower )
 import Test.QuickCheck
-import Data.Maybe
-import Data.Functor
-import Data.List
-import System.Random
-
-{-
-Questions to Matti:
-
-1. DO you just want us to use a variable for determining the max/min values
-assigned to Num or is there something more to it?
-
-
-2. What do you feel is bad in our simplify, is it our main functions
-or is that we go too in depth in some of the helper code?
-
-3. How exactly do we prove that there is no junk?
-Do you want us to create specific expressions and their corresponding simplify or
-do you want us to provide a general formula? 
-
--}
+    ( oneof, frequency, sized, Gen, Arbitrary(arbitrary) )
+import Data.Maybe ( isNothing, fromJust )
 
 -------------------------------------------------------------
 -- Some test cases to test our code
