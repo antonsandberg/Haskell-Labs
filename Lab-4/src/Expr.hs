@@ -424,7 +424,7 @@ prop_Simplify_sameValue :: Expr -> Double -> Bool
 prop_Simplify_sameValue e n = eval e n == eval (simplify e) n
  
 prop_Simplify_noJunk :: Expr -> Bool
-prop_Simplify_noJunk e = simplified == simplifyHelper simplified
+prop_Simplify_noJunk e = simplifyHelperBool simplified
       where simplified = simplify e
 
 
