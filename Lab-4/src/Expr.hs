@@ -231,9 +231,9 @@ readExpr s = parsing $ parse expr $ removeSpaces s
         parsing Nothing               = Nothing
 
 expr, term, factor, parseX, parseSin, parseCos :: Parser Expr
-parseX    = char 'x' *> return X
-parseSin  = char 's' *> char 'i' *> char 'n' *> (Uni Sin <$> factor)
-parseCos  = char 'c' *> char 'o' *> char 's' *> (Uni Cos <$> factor)
+parseX    = (char 'x' <|> char 'X')*> return X
+parseSin  = (char 's' <|> char 'S') *> (char 'i' <|> char 'I') *> (char 'n' <|> char 'N') *> (Uni Sin <$> factor)
+parseCos  = (char 'c' <|> char 'C') *> (char 'o'<|> char 'O') *> (char 's' <|> char 'S') *> (Uni Cos <$> factor)
 expr      = foldl1 (Op Add) <$> chain term (char '+')
 term      = foldl1 (Op Mul) <$> chain factor (char '*')
 factor    = parseX <|> (Num <$> readsP) <|> char '(' *> expr <* char ')' <|> parseSin <|> parseCos
