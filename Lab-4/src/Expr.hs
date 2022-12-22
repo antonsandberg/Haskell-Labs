@@ -13,7 +13,6 @@ module Expr where
 import Parsing ( chain, char, parse, readsP, (<|>), Parser )
 import Data.Char ( isSpace, toLower )
 import Test.QuickCheck
-    ( oneof, frequency, sized, Gen, Arbitrary(arbitrary) )
 import Data.Maybe ( isNothing, fromJust )
 
 -------------------------------------------------------------
@@ -162,8 +161,9 @@ showExpr (Num n)      = show n
 -- showExpr (Uni Sin e)      = "sin " ++ showFactorCosSin e
 -- showExpr (Uni Cos e)      = "cos " ++ showFactorCosSin e
 showExpr (Uni sc e)     = lowSc ++ " " ++ showFactorCosSin e 
-      where lowSc :: String -- Making sure the parser is unaffected
-            lowSc = [toLower c | c <- show sc]          
+      where ssc = show sc
+            lowSc :: String -- Making sure the parser is unaffected
+            lowSc = toLower (head ssc):tail ssc
 
 showExpr X            = "x"
 showExpr (Op Add e1 e2)  = showExpr e1 ++ " + " ++ showExpr e2
