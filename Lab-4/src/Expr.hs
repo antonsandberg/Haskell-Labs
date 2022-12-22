@@ -83,7 +83,7 @@ data BinOp = Add | Mul
               deriving Eq
 
 data UniOp = Sin | Cos
-              deriving Eq
+              deriving (Eq, Show)
 
 data Expr = Num Double
               | Op BinOp Expr Expr
@@ -177,6 +177,9 @@ showExpr :: Expr -> String
 showExpr (Num n)      = show n
 showExpr (Uni Sin e)      = "sin " ++ showFactorCosSin e
 showExpr (Uni Cos e)      = "cos " ++ showFactorCosSin e
+
+--showExpr (Uni sc e)     = show sc ++ " " ++ showFactorCosSin e --> VÄRT HA DENNA FÖR ATT SPARA EN READ KOD? SIN/COS SKRIVS MED STORT S OCH C ISÅFALL
+
 showExpr X            = "x"
 showExpr (Op Add e1 e2)  = showExpr e1 ++ " + " ++ showExpr e2
 showExpr (Op Mul e1 e2)    = showFactor e1 ++ " * " ++ showFactor e2
@@ -186,14 +189,13 @@ showExpr (Op Mul e1 e2)    = showFactor e1 ++ " * " ++ showFactor e2
 
 showFactorCosSin :: Expr -> String
 showFactorCosSin (Num n)  = showExpr (Num n)
-showFactorCosSin (Uni Sin a)  = showExpr (Uni Sin a)
-showFactorCosSin (Uni Cos a)  = showExpr (Uni Cos a)
+showFactorCosSin (Uni sc a)  = showExpr (Uni sc a)
 showFactorCosSin X        = showExpr X
 showFactorCosSin e        = "(" ++ showExpr e ++ ")"
 
 
 instance Show Expr where
-  show :: Expr -> String
+  -- show :: Expr -> String
   show = showExpr
 
 
@@ -416,8 +418,16 @@ simplifyHelper (Uni uni e) = Uni uni $ simplifyHelper e
 -- Not sure if this is asked but since we are suppose to check
 -- create a prop function to make sure simplify works as intended
 prop_Simplify :: Expr -> Double -> Bool
-prop_Simplify e n = eval e n == eval (simplify e) n
+prop_Simplify e n = (prop_Simplify_sameValue e n) && (prop_Simplify_noJunk e)
+
+prop_Simplify_sameValue :: Expr -> Double -> Bool  
+prop_Simplify_sameValue e n = eval e n == eval (simplify e) n
  
+prop_Simplify_noJunk :: Expr -> Bool
+prop_Simplify_noJunk e = simplified == (simplifyHelper simplified)
+      where simplified = simplify e
+
+
 -- -------------------------------------------------------------
 -- -- *G
 -- -------------------------------------------------------------
