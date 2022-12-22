@@ -256,9 +256,9 @@ removeSpaces = filter (not . isSpace)
 -- -------------------------------------------------------------
 assoc :: Expr -> Expr
 assoc (Op Add (Op Add e1 e2) e3)  = assoc (Op Add e1 (Op Add e2 e3))
-assoc (Op Add e1 e2)              = Op Add (assoc e1) (assoc e2)
+--assoc (Op Add e1 e2)              = Op Add (assoc e1) (assoc e2)
 assoc (Op Mul (Op Mul e1 e2) e3)  = assoc (Op Mul e1 (Op Mul e2 e3))
-assoc (Op Mul e1 e2)              = Op Mul (assoc e1) (assoc e2)
+assoc (Op op e1 e2)              = Op op (assoc e1) (assoc e2)
 assoc (Uni op e)                  = Uni op (assoc e)
 -- Otherwise
 assoc e                           = e  
@@ -415,16 +415,16 @@ simplifyHelper (Uni uni (Num x)) = fromJust $ readExpr $ show $ eval (Uni uni (N
 simplifyHelper (Uni uni e) = Uni uni $ simplifyHelper e
 
 
--- Not sure if this is asked but since we are suppose to check
--- create a prop function to make sure simplify works as intended
+-- Check both if the simplified value achieves the same value as well 
+-- as that it contains no junk
 prop_Simplify :: Expr -> Double -> Bool
-prop_Simplify e n = (prop_Simplify_sameValue e n) && (prop_Simplify_noJunk e)
+prop_Simplify e n = prop_Simplify_sameValue e n && prop_Simplify_noJunk e
 
 prop_Simplify_sameValue :: Expr -> Double -> Bool  
 prop_Simplify_sameValue e n = eval e n == eval (simplify e) n
  
 prop_Simplify_noJunk :: Expr -> Bool
-prop_Simplify_noJunk e = simplified == (simplifyHelper simplified)
+prop_Simplify_noJunk e = simplified == simplifyHelper simplified
       where simplified = simplify e
 
 
