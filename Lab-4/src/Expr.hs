@@ -255,9 +255,7 @@ removeSpaces = filter (not . isSpace)
 -- -- *E
 -- -------------------------------------------------------------
 assoc :: Expr -> Expr
-assoc (Op Add (Op Add e1 e2) e3)  = assoc (Op Add e1 (Op Add e2 e3))
---assoc (Op Add e1 e2)              = Op Add (assoc e1) (assoc e2)
-assoc (Op Mul (Op Mul e1 e2) e3)  = assoc (Op Mul e1 (Op Mul e2 e3))
+assoc (Op op1 (Op op2 e1 e2) e3) | op1 == op2 = assoc (Op op1 e1 (Op op2 e2 e3))
 assoc (Op op e1 e2)              = Op op (assoc e1) (assoc e2)
 assoc (Uni op e)                  = Uni op (assoc e)
 -- Otherwise
@@ -276,11 +274,7 @@ assoc e                           = e
 instance Arbitrary Expr where
   arbitrary = sized arbExpr
 
--- says that first showing and then reading should yield the same
--- as expression -> check that it doesä
-
--- This needs to be fixed such that it handles associativity
--- SO create some sort of assoc function
+-- We handle associtative expressions with the assoc function
 prop_ShowReadExpr :: Expr -> Bool
 prop_ShowReadExpr e | isNothing (readExpr (showExpr e)) = True
                     | otherwise                         = assoc (fromJust (readExpr (showExpr e))) == assoc e
@@ -382,13 +376,13 @@ simplify e = do
   if simplified == e then simplified else simplify simplified
 
 simplifyHelper :: Expr -> Expr
--- Base cases (not sure if they are necessary)
+-- Base cases
 simplifyHelper (Num x) = Num x
 simplifyHelper X = X
 
 simplifyHelper (Op Add (Num x1) (Num 0.0)) = Num x1
 simplifyHelper (Op Add (Num 0.0) (Num x2)) = Num x2
--- Covers both Add and Mul
+-- Covers both Add and Mul with the getOp function
 simplifyHelper (Op op (Num x1) (Num x2))  = Num (getOp op x1 x2)
 
 simplifyHelper (Op Add X (Num 0.0))        = X
