@@ -1,6 +1,6 @@
 module Expr where
 
-{- Lab 4
+{- Lab 4 V.2.0
    Date: 2022-12-14
    Authors: Zozk Mohamed and Anton Sandberg
    Lab group: - 48
@@ -143,8 +143,8 @@ cos = Uni Cos
 size :: Expr -> Int
 size (Num _)      = 1
 size X            = 1
-size (Op _ e1 e2)  = 1 + size e1 + size e2
-size (Uni _ e)      = 1 + size e
+size (Op _ e1 e2) = 1 + size e1 + size e2
+size (Uni _ e)    = 1 + size e
 
 
 
@@ -181,18 +181,18 @@ showExpr (Uni sc e)     = lowSc ++ " " ++ showFactorCosSin e
       where lowSc :: String
             lowSc = [toLower c | c <- show sc]          
 
-showExpr X            = "x"
-showExpr (Op Add e1 e2)  = showExpr e1 ++ " + " ++ showExpr e2
+showExpr X                 = "x"
+showExpr (Op Add e1 e2)    = showExpr e1 ++ " + " ++ showExpr e2
 showExpr (Op Mul e1 e2)    = showFactor e1 ++ " * " ++ showFactor e2
       where showFactor :: Expr -> String
             showFactor (Op Add a b) = "("++showExpr (Op Add a b)++")"
-            showFactor e         = showExpr e
+            showFactor e            = showExpr e
 
 showFactorCosSin :: Expr -> String
-showFactorCosSin (Num n)  = showExpr (Num n)
+showFactorCosSin (Num n)     = showExpr (Num n)
 showFactorCosSin (Uni sc a)  = showExpr (Uni sc a)
-showFactorCosSin X        = showExpr X
-showFactorCosSin e        = "(" ++ showExpr e ++ ")"
+showFactorCosSin X           = showExpr X
+showFactorCosSin e           = "(" ++ showExpr e ++ ")"
 
 
 instance Show Expr where
@@ -215,8 +215,8 @@ instance Show Expr where
 -- eval (Cos e) v      = Prelude.cos $ eval e v
 
 eval :: Expr -> Double -> Double
-eval (Num n) _      = n
-eval X v            = v
+eval (Num n) _        = n
+eval X v              = v
 eval (Op op e1 e2) v  = getOp op (eval e1 v)  (eval e2 v)
 eval (Uni uni e) v    = getUni uni $ eval e v
 
@@ -232,9 +232,9 @@ readExpr s = parsing $ parse expr $ removeSpaces s
         parsing Nothing               = Nothing
 
 expr, term, factor, parseX, parseSin, parseCos :: Parser Expr
-parseX    = (char 'x' <|> char 'X')*> return X
+parseX    = (char 'x' <|> char 'X') *> return X
 parseSin  = (char 's' <|> char 'S') *> (char 'i' <|> char 'I') *> (char 'n' <|> char 'N') *> (Uni Sin <$> factor)
-parseCos  = (char 'c' <|> char 'C') *> (char 'o'<|> char 'O') *> (char 's' <|> char 'S') *> (Uni Cos <$> factor)
+parseCos  = (char 'c' <|> char 'C') *> (char 'o' <|> char 'O') *> (char 's' <|> char 'S') *> (Uni Cos <$> factor)
 expr      = foldl1 (Op Add) <$> chain term (char '+')
 term      = foldl1 (Op Mul) <$> chain factor (char '*')
 factor    = parseX <|> (Num <$> readsP) <|> char '(' *> expr <* char ')' <|> parseSin <|> parseCos
@@ -257,10 +257,10 @@ removeSpaces = filter (not . isSpace)
 -- -------------------------------------------------------------
 assoc :: Expr -> Expr
 assoc (Op op1 (Op op2 e1 e2) e3) | op1 == op2 = assoc (Op op1 e1 (Op op2 e2 e3))
-assoc (Op op e1 e2)              = Op op (assoc e1) (assoc e2)
-assoc (Uni op e)                  = Uni op (assoc e)
+assoc (Op op e1 e2)                           = Op op (assoc e1) (assoc e2)
+assoc (Uni op e)                              = Uni op (assoc e)
 -- Otherwise
-assoc e                           = e  
+assoc e                                       = e  
 
 
 -- -- assoc :: Expr -> Expr
@@ -397,7 +397,7 @@ simplifyHelper (Op Mul (Num 1.0) e2)       = simplifyHelper e2
 simplifyHelper (Op Mul e1 (Num 1.0))       = simplifyHelper e1
 
 -- Otherwise (covers both Add and Mul)
-simplifyHelper (Op op e1 e2)              = Op op (simplifyHelper e1) (simplifyHelper e2)
+simplifyHelper (Op op e1 e2)               = Op op (simplifyHelper e1) (simplifyHelper e2)
 
 -- Don't think there is much to do for cos/sin
 -- however still have to declare them otherwise
@@ -413,40 +413,37 @@ simplifyHelper (Uni uni e) = Uni uni $ simplifyHelper e
 -- Check both if the simplified value achieves the same value as well 
 -- as that it contains no junk
 prop_Simplify :: Expr -> Double -> Bool
-prop_Simplify e n = prop_Simplify_sameValue e n && prop_Simplify_noJunk e
+prop_Simplify e n = prop_Simplify_sameValue e smpE n && prop_Simplify_noJunk smpE
+       where smpE = simplify e
 
-prop_Simplify_sameValue :: Expr -> Double -> Bool  
-prop_Simplify_sameValue e n = eval e n == eval (simplify e) n
- 
-prop_Simplify_noJunk :: Expr -> Bool
-prop_Simplify_noJunk e = simplifyHelperBool simplified
-      where simplified = simplify e
+prop_Simplify_sameValue :: Expr -> Expr -> Double -> Bool  
+prop_Simplify_sameValue e smpE n = eval e n == eval smpE n
 
 -- Making sure there is no junk, returning False if it is
-simplifyHelperBool :: Expr -> Bool
-simplifyHelperBool (Num x) = True
-simplifyHelperBool X = True
+prop_Simplify_noJunk :: Expr -> Bool
+prop_Simplify_noJunk (Num x) = True
+prop_Simplify_noJunk X = True
 
-simplifyHelperBool (Op Add (Num x1) (Num 0.0)) = False
-simplifyHelperBool (Op Add (Num 0.0) (Num x2)) = False
+prop_Simplify_noJunk (Op Add (Num x1) (Num 0.0)) = False
+prop_Simplify_noJunk (Op Add (Num 0.0) (Num x2)) = False
 -- Covers both Add and Mul
-simplifyHelperBool (Op op (Num x1) (Num x2))  = False
+prop_Simplify_noJunk (Op op (Num x1) (Num x2))  = False
 
-simplifyHelperBool (Op Add X (Num 0.0))        = False
-simplifyHelperBool (Op Add (Num 0.0) X)        = False
-simplifyHelperBool (Op Add e1 (Num 0.0))       = False
-simplifyHelperBool (Op Add (Num 0.0) e2)       = False
+prop_Simplify_noJunk (Op Add X (Num 0.0))        = False
+prop_Simplify_noJunk (Op Add (Num 0.0) X)        = False
+prop_Simplify_noJunk (Op Add e1 (Num 0.0))       = False
+prop_Simplify_noJunk (Op Add (Num 0.0) e2)       = False
 
-simplifyHelperBool (Op Mul _ (Num 0.0))        = False
-simplifyHelperBool (Op Mul (Num 0.0) _)        = False
-simplifyHelperBool (Op Mul (Num 1.0) e2)       = False
-simplifyHelperBool (Op Mul e1 (Num 1.0))       = False
+prop_Simplify_noJunk (Op Mul _ (Num 0.0))        = False
+prop_Simplify_noJunk (Op Mul (Num 0.0) _)        = False
+prop_Simplify_noJunk (Op Mul (Num 1.0) e2)       = False
+prop_Simplify_noJunk (Op Mul e1 (Num 1.0))       = False
 
 -- Otherwise (covers both Add and Mul)
-simplifyHelperBool (Uni uni (Num x)) = False
-simplifyHelperBool (Uni uni e) = simplifyHelperBool e
+prop_Simplify_noJunk (Uni uni (Num x)) = False
+prop_Simplify_noJunk (Uni uni e) = prop_Simplify_noJunk e
 
-simplifyHelperBool (Op op e1 e2)              = simplifyHelperBool e1 && simplifyHelperBool e2
+prop_Simplify_noJunk (Op op e1 e2)              = prop_Simplify_noJunk e1 && prop_Simplify_noJunk e2
 
 -- -------------------------------------------------------------
 -- -- *G
