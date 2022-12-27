@@ -17,18 +17,25 @@ import Data.Maybe ( isNothing, fromJust )
 -- Some test cases to test our code
 -------------------------------------------------------------
 
+expr1 :: Expr
 expr1 = Op Mul (Op Add (Num 3) (Num 4)) (Op Add (Op Add X (Num 3)) (Uni Sin (Op Add (Num 3) (Num 4))))
 
+expr2 :: Expr
 expr2 = Op Add (Op Mul (Num 3) (Num 4)) (Op Add (Op Add X (Num 3)) (Uni Cos (Op Add (Num 3) (Num 4))))
 
+expr3 :: Expr
 expr3 = Uni Sin X
 
-expr4 =  fromJust $ readExpr $ "sin (x*x*x*x) + 4*3*2 + (3+2)"
+expr4 :: Expr
+expr4 =  fromJust $ readExpr "sin (x*x*x*x) + 4*3*2 + (3+2)"
 
+expr5 :: Expr
 expr5 = Op Add (Op Mul (Num 3) (Num 4)) (Op Add (Op Add (Num 4) (Num 3))  (Uni Cos (Op Add (Op Add (Num 3) (Num 4)) X)))
 
+expr6 :: Expr
 expr6 = fromJust $ readExpr "4 + 3 + 5 + 6 +sin(x) + cos(x)"
 
+expr7 :: Expr
 expr7 = Uni Cos X
 
 -------------------------------------------------------------
@@ -68,6 +75,9 @@ mul = Op Mul
 sin,cos :: Expr -> Expr
 sin = Uni Sin
 cos = Uni Cos
+
+x :: Expr
+x = X
 
 -- Counts the number of functions and operators in the given expression
 size :: Expr -> Int
