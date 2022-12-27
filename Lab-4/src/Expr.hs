@@ -93,7 +93,9 @@ size (Uni _ e)    = 1 + size e
 -- Converts any expression to a string
 showExpr :: Expr -> String
 showExpr (Num n)      = show n
-showExpr (Uni sc e)     = show sc ++ " " ++ showFactorCosSin e 
+showExpr (Uni sc e)     = lowFirst ++ " " ++ showFactorCosSin e where
+  ssc = show sc
+  lowFirst = toLower (head ssc):tail ssc
 
 showExpr X                 = "x"
 showExpr (Op Add e1 e2)    = showExpr e1 ++ " + " ++ showExpr e2
