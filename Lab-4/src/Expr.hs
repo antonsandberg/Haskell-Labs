@@ -101,7 +101,6 @@ showFactorCosSin e           = "(" ++ showExpr e ++ ")"
 
 
 instance Show Expr where
-  show :: Expr -> String
   show = showExpr
 
 
